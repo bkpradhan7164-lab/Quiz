@@ -33,6 +33,7 @@
 <body>
 <form id="quizForm">
 <div class="wrap">
+  <!-- START CARD -->
   <div class="card" id="startCard">
     <header>
       <div>
@@ -63,6 +64,7 @@
     </div>
   </div>
 
+  <!-- QUIZ CARD -->
   <div class="card" id="quizCard" style="display:none;margin-top:14px">
     <header style="align-items:flex-start">
       <div>
@@ -75,40 +77,35 @@
       </div>
     </header>
 
-    <div class="qbox" id="qbox">
-      <!-- question will be injected here -->
-    </div>
-
-    <div class="nav-numbers" id="navNumbers" aria-label="Question navigation"></div>
+    <div class="qbox" id="qbox"></div>
+    <div class="nav-numbers" id="navNumbers"></div>
 
     <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px">
       <div>
-        <button id="prevBtn" class="secondary">◀ Prev</button>
-        <button id="nextBtn">Next ▶</button>
+        <button id="prevBtn" class="secondary" type="button">◀ Prev</button>
+        <button id="nextBtn" type="button">Next ▶</button>
       </div>
       <div>
-        <button id="submitBtn" style="background:#16a34a">Submit Exam</button>
+        <button id="submitBtn" style="background:#16a34a" type="button">Submit Exam</button>
       </div>
     </div>
 
     <div class="footer">You must remain in full-screen mode. Switching tabs or exiting full-screen will auto-submit.</div>
   </div>
 
+  <!-- RESULT CARD -->
   <div class="card" id="resultCard" style="display:none;margin-top:14px">
     <h2>Exam Submitted</h2>
     <div id="resultSummary" class="result"></div>
     <div class="summary" id="detailSummary"></div>
   </div>
 </div>
+</form>
 
 <script>
-/*
- Quiz data built from your LaTeX question set.
- For each item: { cat, q, opts:[A,B,C,D], ans, marks }
- NOTE: ans values are provided (used for scoring).
-*/
+// ---------------- QUIZ LOGIC ----------------
 const quiz = [
-  {cat:"Number System", q:"If x = 0.4 <span style="text-decoration: overline;">36</span> (i.e. 0.436363...), find the value of 100x - x.", opts:["39","36","40","43"], ans:"43", marks:1},
+  {cat:"Number System", q:"If x = 0.436363..., find the value of 100x - x.", opts:["39","36","40","43"], ans:"43", marks:1},
   {cat:"LCM–HCF", q:"The LCM of two numbers is 180 and their HCF is 15. If one number is 45, find the other.", opts:["60","75","40","90"], ans:"60", marks:1},
   {cat:"Percentage", q:"A number increases by 25% and then decreases by 20%. The net change is:", opts:["0%","+5%","–5%","–10%"], ans:"0%", marks:1},
   {cat:"Ratio", q:"If A:B:C = 2:3:5 and total = 5000, find C.", opts:["2000","2500","3000","3500"], ans:"2500", marks:1},
@@ -160,212 +157,121 @@ const quiz = [
   {cat:"Logical Puzzle", q:"If 9 + 3 = 27, 8 + 4 = 32, 6 + 5 = ?, find ?.", opts:["30","32","35","36"], ans:"30", marks:1}
 ];
 
-// state
+// STATE
 let currentIndex = 0;
-const total = quiz.length;
-const responses = new Array(total).fill(null);
-let studentName = '';
+let responses = new Array(quiz.length).fill(null);
+let studentName = "";
 let timerSec = 45*60;
 let timerInterval = null;
 let examStarted = false;
 
-// DOM refs
-const startCard = document.getElementById('startCard');
-const quizCard = document.getElementById('quizCard');
-const resultCard = document.getElementById('resultCard');
-const qHeading = document.getElementById('qHeading');
-const qCategory = document.getElementById('qCategory');
-const qbox = document.getElementById('qbox');
-const navNumbers = document.getElementById('navNumbers');
-const timerTop = document.getElementById('timerTop');
-const timerMain = document.getElementById('timer');
+const startCard=document.getElementById('startCard'),
+      quizCard=document.getElementById('quizCard'),
+      resultCard=document.getElementById('resultCard'),
+      qHeading=document.getElementById('qHeading'),
+      qCategory=document.getElementById('qCategory'),
+      qbox=document.getElementById('qbox'),
+      navNumbers=document.getElementById('navNumbers'),
+      timerTop=document.getElementById('timerTop'),
+      timerMain=document.getElementById('timer');
+
+function escapeHtml(str){return String(str||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]))}
 
 function buildNav(){
-  navNumbers.innerHTML = '';
-  for(let i=0;i<total;i++){
-    const btn = document.createElement('button');
-    btn.textContent = (i+1);
+  navNumbers.innerHTML='';
+  quiz.forEach((_,i)=>{
+    const btn=document.createElement('button');
+    btn.type = "button"; // ✅ prevents form submission
+    btn.textContent = i + 1;
     btn.dataset.idx = i;
-    btn.onclick = ()=>{ saveCurrent(); currentIndex = i; renderQuestion(); };
-    if(i===0) btn.classList.add('current');
+    btn.onclick = () => {
+      saveCurrent();
+      currentIndex = i;
+      renderQuestion();
+    };
     navNumbers.appendChild(btn);
-  }
+  });
 }
 
+
 function renderQuestion(){
-  const item = quiz[currentIndex];
-  qHeading.textContent = `Question ${currentIndex+1}`;
-  qCategory.textContent = item.cat;
-  // build HTML
-  let html = `<div class="qtext">${item.q}</div>`;
-  html += `<div>`;
-  for(let i=0;i<item.opts.length;i++){
-    const opt = item.opts[i];
-    const checked = responses[currentIndex] === opt ? 'checked' : '';
-    html += `<label class="opt"><input type="radio" name="opt" value="${escapeHtml(opt)}" ${checked}/> <strong>${String.fromCharCode(65+i)}.</strong> ${opt}</label>`;
-  }
-  html += `</div>`;
-  qbox.innerHTML = html;
-  // highlight nav
-  Array.from(navNumbers.children).forEach((b,idx)=> b.classList.toggle('current', idx===currentIndex));
+  const item=quiz[currentIndex];
+  qHeading.textContent=`Question ${currentIndex+1}`;
+  qCategory.textContent=item.cat;
+  let html=`<div class="qtext">${item.q}</div>`;
+  item.opts.forEach((opt,i)=>{
+    const checked=(responses[currentIndex]===opt)?'checked':'';
+    html+=`<label class="opt"><input type="radio" name="opt" value="${escapeHtml(opt)}" ${checked}/> ${String.fromCharCode(65+i)}. ${opt}</label>`;
+  });
+  qbox.innerHTML=html;
+  Array.from(navNumbers.children).forEach((b,idx)=>b.classList.toggle('current',idx===currentIndex));
 }
 
 function saveCurrent(){
-  const sel = qbox.querySelector('input[name="opt"]:checked');
-  if(sel) responses[currentIndex] = sel.value;
+  const sel=qbox.querySelector('input[name="opt"]:checked');
+  if(sel) responses[currentIndex]=sel.value;
 }
 
-document.getElementById('startBtn').addEventListener('click', startExam);
-document.getElementById('demoBtn').addEventListener('click', startDemo);
-document.getElementById('prevBtn').addEventListener('click', ()=>{
-  saveCurrent(); if(currentIndex>0) currentIndex--; renderQuestion();
-});
-document.getElementById('nextBtn').addEventListener('click', ()=>{
-  saveCurrent(); if(currentIndex<total-1) currentIndex++; renderQuestion();
-});
-document.getElementById('submitBtn').addEventListener('click', ()=>{
-  if(!confirm('Submit exam now?')) return;
-  finishExam();
-});
-
-// full-screen helpers
-function openFullscreen(){
-  const el = document.documentElement;
-  if(el.requestFullscreen) el.requestFullscreen();
-  else if(el.webkitRequestFullscreen) el.webkitRequestFullscreen();
-  else if(el.msRequestFullscreen) el.msRequestFullscreen();
-}
-function closeFullscreen(){
-  if(document.exitFullscreen) document.exitFullscreen();
-  else if(document.webkitExitFullscreen) document.webkitExitFullscreen();
-  else if(document.msExitFullscreen) document.msExitFullscreen();
-}
-
-// visibility / tab change -> auto submit
-document.addEventListener('visibilitychange', ()=>{
-  if(!examStarted) return;
-  if(document.hidden){
-    alert('You switched tab or minimized the browser. The exam will be submitted.');
-    finishExam();
-  }
-});
-
-// detect fullscreen exit -> auto submit
-document.addEventListener('fullscreenchange', ()=>{
-  if(!examStarted) return;
-  if(!document.fullscreenElement){
-    alert('You exited full-screen. The exam will be submitted.');
-    finishExam();
-  }
-});
+function formatTime(s){const m=Math.floor(s/60),sec=s%60;return `${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;}
 
 function startExam(){
-  const nameInput = document.getElementById('studentName').value.trim();
-  if(!nameInput){ alert('Please enter your name to start.'); return; }
-  studentName = nameInput;
-  // go fullscreen
+  const nameInput=document.getElementById('studentName').value.trim();
+  if(!nameInput){alert('Enter your name');return;}
+  studentName=nameInput;
   openFullscreen();
   startCore();
 }
 function startDemo(){
-  // starts without fullscreen for quick testing
-  studentName = document.getElementById('studentName').value.trim() || 'Demo Student';
+  studentName=document.getElementById('studentName').value.trim()||'Demo Student';
   startCore(true);
 }
-
 function startCore(demo=false){
-  examStarted = true;
-  startCard.style.display = 'none';
-  quizCard.style.display = 'block';
-  timerMain.style.display = demo ? 'none' : 'block';
-  timerTop.style.display = 'block';
-  buildNav();
-  renderQuestion();
-  // start timer
-  timerTop.textContent = formatTime(timerSec);
-  timerMain.textContent = formatTime(timerSec);
-  timerInterval = setInterval(()=>{
-    timerSec--;
-    timerTop.textContent = formatTime(timerSec);
-    timerMain.textContent = formatTime(timerSec);
-    if(timerSec<=0){
-      clearInterval(timerInterval);
-      alert('Time is up — exam will be submitted.');
-      finishExam();
-    }
+  examStarted=true;
+  startCard.style.display='none'; quizCard.style.display='block';
+  timerMain.style.display=demo?'none':'block'; buildNav(); renderQuestion();
+  timerInterval=setInterval(()=>{
+    timerSec--; timerTop.textContent=formatTime(timerSec); timerMain.textContent=formatTime(timerSec);
+    if(timerSec<=0){clearInterval(timerInterval); alert('Time up'); finishExam();}
   },1000);
 }
+function openFullscreen(){const el=document.documentElement; if(el.requestFullscreen) el.requestFullscreen();}
+function closeFullscreen(){if(document.exitFullscreen) document.exitFullscreen();}
+document.addEventListener('visibilitychange',()=>{if(examStarted&&document.hidden){alert('Tab switched. Auto-submit.');finishExam();}});
+document.addEventListener('fullscreenchange',()=>{if(examStarted&&!document.fullscreenElement){alert('Exited fullscreen. Auto-submit.');finishExam();}});
 
-function formatTime(s){
-  const m = Math.floor(s/60); const sec = s%60;
-  return String(m).padStart(2,'0')+':'+String(sec).padStart(2,'0');
-}
+document.getElementById('startBtn').addEventListener('click',e=>{e.preventDefault();startExam();});
+document.getElementById('demoBtn').addEventListener('click',e=>{e.preventDefault();startDemo();});
+document.getElementById('prevBtn').addEventListener('click',()=>{saveCurrent();if(currentIndex>0)currentIndex--;renderQuestion();});
+document.getElementById('nextBtn').addEventListener('click',()=>{saveCurrent();if(currentIndex<quiz.length-1)currentIndex++;renderQuestion();});
+document.getElementById('submitBtn').addEventListener('click',()=>{if(confirm('Submit exam?'))finishExam();});
 
 function finishExam(){
   if(!examStarted) return;
-  examStarted = false;
-  clearInterval(timerInterval);
-  saveCurrent();
-  // scoring
-  let score=0, max=0; const details=[];
-  quiz.forEach((it,i)=>{
-    max += it.marks;
-    const given = responses[i];
-    const correct = it.ans;
-    const got = (given===correct) ? it.marks : 0;
-    score += got;
-    details.push({q:it.q, given: given || '(no answer)', correct, marks: got});
+  examStarted=false; clearInterval(timerInterval); saveCurrent();
+  let score=0,max=0; const details=[];
+  quiz.forEach((it,i)=>{max+=it.marks;const got=(responses[i]===it.ans)?it.marks:0;score+=got;
+    details.push({q:it.q,given:responses[i]||'(no answer)',correct:it.ans,marks:got});
   });
-  // show result
-  quizCard.style.display = 'none';
-  resultCard.style.display = 'block';
-  document.getElementById('resultSummary').innerHTML = `<p><strong>Name:</strong> ${escapeHtml(studentName)}<br>
-    <strong>Score:</strong> ${score} / ${max} &nbsp; (<strong>${((score/max)*100).toFixed(2)}%</strong>)</p>`;
-  const detailDiv = document.getElementById('detailSummary');
-  detailDiv.innerHTML = '';
-  details.forEach((d,idx)=>{
-    const el = document.createElement('div');
-    el.style.padding = '6px 0';
-    el.style.borderBottom = '1px dashed #eee';
-    el.innerHTML = `<strong>Q${idx+1}:</strong> ${escapeHtml(d.q)}<br>
-      <strong>Your answer:</strong> ${escapeHtml(d.given)} &nbsp; <strong>Correct:</strong> ${escapeHtml(d.correct)}`;
-    detailDiv.appendChild(el);
-  });
-  // exit fullscreen if needed
-  try{ closeFullscreen(); }catch(e){}
-  // disable further interactions
-  document.getElementById('submitBtn').disabled=true;
-  document.getElementById('prevBtn').disabled=true;
-  document.getElementById('nextBtn').disabled=true;
-  Array.from(navNumbers.children).forEach(b=>b.disabled=true);
-}
+  quizCard.style.display='none'; resultCard.style.display='block';
+  document.getElementById('resultSummary').innerHTML=`<p><strong>Name:</strong> ${escapeHtml(studentName)}<br><strong>Score:</strong> ${score}/${max}</p>`;
+  const d=document.getElementById('detailSummary'); d.innerHTML='';
+  details.forEach((r,i)=>{const el=document.createElement('div'); el.innerHTML=`<strong>Q${i+1}:</strong> ${r.q}<br>Your: ${r.given} | Correct: ${r.correct}`; d.appendChild(el);});
 
-// small helper to escape HTML
-function escapeHtml(str){
-  if(str===null || str===undefined) return '';
-  return String(str).replace(/[&<>"']/g, (m)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[m]);
+  // --- send result to Google Script ---
+  fetch("https://script.google.com/macros/s/AKfycbym7870t9FYTGPZqgXjxzS2WdL4ye4uqfudkpfVQHAAJUUKn6DPt6RQRCIvlyHfJmSk/exec", {
+    method: "POST",
+    body: new URLSearchParams({
+      name: studentName,
+      score: score,
+      total: max,
+      answers: JSON.stringify(details)
+    })
+  })
+  .then(()=>console.log("Result sent"))
+  .catch(err=>console.error("Error sending result:",err));
+
+  try{closeFullscreen();}catch(e){}
 }
 </script>
-
-<script>
-  document.getElementById("quizForm").addEventListener("submit", function(e) {
-    e.preventDefault();
-
-    const name = document.getElementById("studentName").value;
-    const email = document.getElementById("studentEmail") ? document.getElementById("studentEmail").value : "";
-    const score = window.quizScore || 0;  // from your quiz logic
-    const answers = JSON.stringify(window.userAnswers || {});
-
-    fetch("https://script.google.com/macros/s/AKfycbym7870t9FYTGPZqgXjxzS2WdL4ye4uqfudkpfVQHAAJUUKn6DPt6RQRCIvlyHfJmSk/exec", {
-      method: "POST",
-      body: new URLSearchParams({ name, email, score, answers })
-    })
-    .then(() => {
-      alert("Quiz submitted successfully!");
-    })
-    .catch(err => alert("Error submitting quiz: " + err));
-  });
-</script>
-</form>
 </body>
 </html>
