@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RRB Section Control Quiz</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    background: #f8fafc;
+    color: #222;
+  }
+  #container {
+    max-width: 800px;
+    margin: auto;
+    padding: 20px;
+  }
+  h1, h2, h3 {
+    text-align: center;
+  }
+  .question {
+    margin-bottom: 20px;
+  }
+  .options label {
+    display: block;
+    margin-bottom: 8px;
+    cursor: pointer;
+  }
+  button {
+    padding: 10px 20px;
+    border: none;
+    background: #2563eb;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  button:hover {
+    background: #1e40af;
+  }
+  #timer {
+    position: fixed;
+    top: 10px;
+    right: 20px;
+    font-weight: bold;
+    font-size: 18px;
+    background: #fff;
+    padding: 6px 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+  }
+</style>
+</head>
+<body>
+
+<div id="timer" style="display:none;">45:00</div>
+
+<div id="container">
+  <div id="intro">
+    <h1>RRB Section Control – Practice Test</h1>
+    <p><b>Instructions:</b></p>
+    <ul>
+      <li>Time limit: 45 minutes (auto-submit when time ends).</li>
+      <li>Each question carries equal marks.</li>
+      <li>Attempt all questions carefully.</li>
+      <li>Do not minimize or exit full-screen — your quiz will be auto-submitted.</li>
+    </ul>
+    <p>Enter your name to begin:</p>
+    <input type="text" id="studentName" placeholder="Your Name" style="width:100%;padding:8px;">
+    <br><br>
+    <button onclick="startExam()">Start Exam</button>
+  </div>
+
+  <div id="quiz" style="display:none;">
+    <div id="questionBox"></div>
+    <button id="prevBtn" onclick="prevQuestion()">Previous</button>
+    <button id="nextBtn" onclick="nextQuestion()">Next</button>
+    <button id="submitBtn" onclick="submitQuiz()" style="display:none;">Submit</button>
+  </div>
+
+  <div id="result" style="display:none;">
+    <h2>Exam Submitted</h2>
+    <p id="resultText"></p>
+  </div>
+</div>
+
+<script>
+const questions = [
+  {
+    q: "(Number System) If x = 0.4̅36, find the value of 100x - x.",
+    options: ["39", "36", "40", "43"],
+    answer: "39"
+  },
+  {
+    q: "(LCM–HCF) The LCM of two numbers is 180 and their HCF is 15. If one number is 45, find the other.",
+    options: ["60", "75", "40", "90"],
+    answer: "60"
+  },
+  {
+    q: "(Percentage) A number increases by 25% and then decreases by 20%. The net change is:",
+    options: ["0%", "+5%", "–5%", "–10%"],
+    answer: "+5%"
+  },
+  {
+    q: "(Ratio) If A:B:C = 2:3:5 and total = 5000, find C.",
+    options: ["2000", "2500", "3000", "3500"],
+    answer: "2500"
+  },
+  {
+    q: "(Profit & Loss) A trader marks goods 40% above cost and allows 10% discount. Find gain %.",
+    options: ["26%", "27%", "28%", "30%"],
+    answer: "26%"
+  }
+];
+
+let current = 0;
+let answers = {};
+let timeLeft = 45 * 60; // 45 minutes
+
+function startExam() {
+  const name = document.getElementById('studentName').value.trim();
+  if (!name) return alert("Please enter your name before starting.");
+
+  document.getElementById('intro').style.display = 'none';
+  document.getElementById('quiz').style.display = 'block';
+  document.getElementById('timer').style.display = 'block';
+  showQuestion();
+
+  // Enter fullscreen
+  openFullscreen();
+
+  // Timer countdown
+  setInterval(() => {
+    if (timeLeft <= 0) {
+      submitQuiz();
+    } else {
+      timeLeft--;
+      const minutes = Math.floor(timeLeft / 60);
+      const seconds = timeLeft % 60;
+      document.getElementById("timer").textContent = 
+        `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+    }
+  }, 1000);
+}
+
+function showQuestion() {
+  const q = questions[current];
+  const box = document.getElementById('questionBox');
+  box.innerHTML = `
+    <h3>Q${current + 1}. ${q.q}</h3>
+    <div class="options">
+      ${q.options.map(opt => `
+        <label>
+          <input type="radio" name="q${current}" value="${opt}" ${answers[current] === opt ? 'checked' : ''}>
+          ${opt}
+        </label>`).join('')}
+    </div>
+  `;
+  document.getElementById('prevBtn').style.display = current === 0 ? 'none' : 'inline-block';
+  document.getElementById('nextBtn').style.display = current === questions.length - 1 ? 'none' : 'inline-block';
+  document.getElementById('submitBtn').style.display = current === questions.length - 1 ? 'inline-block' : 'none';
+}
+
+function nextQuestion() {
+  saveAnswer();
+  if (current < questions.length - 1) current++;
+  showQuestion();
+}
+
+function prevQuestion() {
+  saveAnswer();
+  if (current > 0) current--;
+  showQuestion();
+}
+
+function saveAnswer() {
+  const selected = document.querySelector(`input[name="q${current}"]:checked`);
+  if (selected) answers[current] = selected.value;
+}
+
+function submitQuiz() {
+  saveAnswer();
+  let score = 0;
+  questions.forEach((q, i) => {
+    if (answers[i] === q.answer) score++;
+  });
+  document.getElementById('quiz').style.display = 'none';
+  document.getElementById('timer').style.display = 'none';
+  document.getElementById('result').style.display = 'block';
+  const name = document.getElementById('studentName').value;
+  document.getElementById('resultText').innerHTML = `
+    <b>Name:</b> ${name}<br>
+    <b>Score:</b> ${score}/${questions.length}<br>
+    <b>Percentage:</b> ${(score / questions.length * 100).toFixed(2)}%
+  `;
+  closeFullscreen();
+}
+
+// Fullscreen handling
+function openFullscreen() {
+  const el = document.documentElement;
+  if (el.requestFullscreen) el.requestFullscreen();
+  else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+  else if (el.msRequestFullscreen) el.msRequestFullscreen();
+
+  document.addEventListener("fullscreenchange", () => {
+    if (!document.fullscreenElement) {
+      alert("You exited fullscreen. Exam submitted automatically.");
+      submitQuiz();
+    }
+  });
+}
+
+function closeFullscreen() {
+  if (document.exitFullscreen) document.exitFullscreen();
+}
+</script>
+
+</body>
+</html>
