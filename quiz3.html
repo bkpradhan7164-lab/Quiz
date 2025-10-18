@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Online Quiz</title>
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background: #f4f4f4;
+  margin: 0;
+  padding: 0;
+}
+.container {
+  width: 90%;
+  max-width: 800px;
+  background: #fff;
+  margin: 20px auto;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+h1 {
+  text-align: center;
+  color: #333;
+}
+#intro {
+  text-align: center;
+}
+button {
+  background: #4CAF50;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+button:hover {
+  background: #45a049;
+}
+.question {
+  display: none;
+}
+.options label {
+  display: block;
+  margin: 8px 0;
+  cursor: pointer;
+}
+#timer {
+  text-align: right;
+  font-weight: bold;
+  color: #d9534f;
+}
+#question-nav {
+  margin: 10px 0;
+  text-align: center;
+}
+#question-nav button {
+  margin: 2px;
+  padding: 6px 10px;
+  background: #ddd;
+  border-radius: 50%;
+  border: none;
+}
+#question-nav button.active {
+  background: #4CAF50;
+  color: white;
+}
+#submit-btn {
+  display: none;
+  margin-top: 20px;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h1>Online Quiz</h1>
+
+  <div id="intro">
+    <p><label>Student Name:</label><br>
+    <input type="text" id="studentName" placeholder="Enter your name" required></p>
+    <p><label>Email (optional):</label><br>
+    <input type="email" id="studentEmail" placeholder="Enter your email"></p>
+    <p><label>Exam Duration (minutes):</label><br>
+    <input type="number" id="duration" value="30" min="1"></p>
+    <button onclick="startExam()">Start Exam</button>
+  </div>
+
+  <div id="quiz" style="display:none;">
+    <div id="timer">Time Left: <span id="time">00:00</span></div>
+    <div id="question-nav"></div>
+    <div id="question-container"></div>
+    <button id="submit-btn" onclick="finishExam()">Submit Exam</button>
+  </div>
+
+  <div id="result" style="display:none; text-align:center;">
+    <h2>Exam Completed</h2>
+    <p id="score"></p>
+  </div>
+</div>
+
+<script>
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbym7870t9FYTGPZqgXjxzS2WdL4ye4uqfudkpfVQHAAJUUKn6DPt6RQRCIvlyHfJmSk/exec";
+
+let questions = [
+  // 🔹 SAMPLE QUESTIONS (Replace or extend to all 50)
+  { cat: "Number System", q: "If x = 0.4(36), find 100x - x.", opts: ["39","36","40","43"], ans: "43" },
+  { cat: "LCM–HCF", q: "LCM of two numbers is 180 and HCF is 15. If one is 45, find the other.", opts: ["60","75","40","90"], ans: "60" },
+  { cat: "Percentage", q: "A number increases by 25% then decreases by 20%. Net change is:", opts: ["0%","+5%","–5%","–10%"], ans: "+5%" }
+];
+
+let current = 0, timer, duration, score = 0;
+let userAnswers = [];
+
+function startExam() {
+  const name = document.getElementById("studentName").value.trim();
+  if (!name) { alert("Please enter your name."); return; }
+
+  document.getElementById("intro").style.display = "none";
+  document.getElementById("quiz").style.display = "block";
+  duration = parseInt(document.getElementById("duration").value) * 60;
+
+  showQuestion(0);
+  createNav();
+  startTimer();
+}
+
+function createNav() {
+  const nav = document.getElementById("question-nav");
+  nav.innerHTML = "";
+  questions.forEach((_, i) => {
+    const btn = document.createElement("button");
+    btn.textContent = i + 1;
+    btn.onclick = () => showQuestion(i);
+    nav.appendChild(btn);
+  });
+}
+
+function showQuestion(index) {
+  current = index;
+  const q = questions[index];
+  const container = document.getElementById("question-container");
+
+  container.innerHTML = `
+    <h3>Q${index + 1}. (${q.cat})</h3>
+    <p>${q.q}</p>
+    <div class="options">
+      ${q.opts.map(o => `
+        <label><input type="radio" name="q${index}" value="${o}" 
+        ${userAnswers[index] === o ? "checked" : ""} onchange="saveAnswer(${index}, this.value)"> ${o}</label>
+      `).join("")}
+    </div>
+  `;
+
+  document.querySelectorAll("#question-nav button").forEach((b,i)=>{
+    b.classList.toggle("active", i===index);
+  });
+
+  if (index === questions.length - 1) {
+    document.getElementById("submit-btn").style.display = "block";
+  }
+}
+
+function saveAnswer(index, val) {
+  userAnswers[index] = val;
+}
+
+function startTimer() {
+  const display = document.getElementById("time");
+  timer = setInterval(() => {
+    const m = Math.floor(duration / 60);
+    const s = duration % 60;
+    display.textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    if (duration-- <= 0) {
+      clearInterval(timer);
+      finishExam();
+    }
+  }, 1000);
+}
+
+function finishExam() {
+  clearInterval(timer);
+  const name = document.getElementById("studentName").value.trim();
+  const email = document.getElementById("studentEmail").value.trim();
+  let details = [];
+  score = 0;
+
+  questions.forEach((q,i) => {
+    const given = userAnswers[i] || "Not answered";
+    const correct = q.ans;
+    if (given === correct) score++;
+    details.push({q:q.q, given, correct});
+  });
+
+  document.getElementById("quiz").style.display = "none";
+  document.getElementById("result").style.display = "block";
+  document.getElementById("score").textContent = `Your Score: ${score} / ${questions.length}`;
+
+  sendToGoogle(name, email, score, details);
+}
+
+function sendToGoogle(name, email, score, details) {
+  const answers = details.map((d,i)=>`Q${i+1}: ${d.given} (Correct: ${d.correct})`).join("\n");
+
+  fetch(GOOGLE_SCRIPT_URL, {
+    method: "POST",
+    body: new URLSearchParams({ name, email, score, answers })
+  })
+  .then(() => console.log("✅ Sent to Google Sheet"))
+  .catch(err => console.error("❌ Error:", err));
+}
+</script>
+
+</body>
+</html>
