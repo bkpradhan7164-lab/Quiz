@@ -31,6 +31,7 @@
 </style>
 </head>
 <body>
+<form id="quizForm">
 <div class="wrap">
   <div class="card" id="startCard">
     <header>
@@ -345,5 +346,26 @@ function escapeHtml(str){
   return String(str).replace(/[&<>"']/g, (m)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[m]);
 }
 </script>
+
+<script>
+  document.getElementById("quizForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+
+    const name = document.getElementById("studentName").value;
+    const email = document.getElementById("studentEmail") ? document.getElementById("studentEmail").value : "";
+    const score = window.quizScore || 0;  // from your quiz logic
+    const answers = JSON.stringify(window.userAnswers || {});
+
+    fetch("https://script.google.com/macros/s/AKfycbym7870t9FYTGPZqgXjxzS2WdL4ye4uqfudkpfVQHAAJUUKn6DPt6RQRCIvlyHfJmSk/exec", {
+      method: "POST",
+      body: new URLSearchParams({ name, email, score, answers })
+    })
+    .then(() => {
+      alert("Quiz submitted successfully!");
+    })
+    .catch(err => alert("Error submitting quiz: " + err));
+  });
+</script>
+</form>
 </body>
 </html>
