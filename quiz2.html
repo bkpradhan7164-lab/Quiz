@@ -345,7 +345,7 @@ function escapeHtml(str){
   return String(str).replace(/[&<>"']/g, (m)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[m]);
 }
 </script>
-  <script>
+<script>
 document.getElementById("quizForm").addEventListener("submit", function(e) {
   e.preventDefault();
   
