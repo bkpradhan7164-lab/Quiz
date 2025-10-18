@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>RRB Section Control — Full-Length Test (50 Qs)</title>
+<style>
+  :root{--brand:#2563eb;--danger:#b91c1c;--muted:#6b7280}
+  body{font-family:system-ui,-apple-system,'Segoe UI',Roboto,Arial; background:#f8fafc; margin:0}
+  .wrap{max-width:1100px;margin:18px auto;padding:18px}
+  .card{background:#fff;border-radius:10px;padding:18px;box-shadow:0 6px 18px rgba(2,6,23,0.06)}
+  header{display:flex;justify-content:space-between;align-items:center;gap:12px}
+  h1{font-size:20px;margin:0}
+  #timer{font-weight:700;color:var(--danger);font-size:16px}
+  .intro ul{margin-top:6px}
+  input[type="text"]{width:100%;padding:8px;border-radius:6px;border:1px solid #e5e7eb}
+  .controls{display:flex;gap:8px;align-items:center;margin-top:12px}
+  button{background:var(--brand);color:#fff;padding:9px 12px;border-radius:8px;border:none;cursor:pointer}
+  button.secondary{background:#64748b}
+  .qbox{margin-top:14px}
+  .qtext{font-weight:600;margin-bottom:10px}
+  .opts{display:block;margin-bottom:6px}
+  label.opt{display:block;padding:10px;border-radius:8px;border:1px solid #e6e6e6;margin-bottom:8px;cursor:pointer;background:#fff}
+  label.opt input{margin-right:8px}
+  .nav-numbers{display:flex;flex-wrap:wrap;gap:6px;padding:10px 0}
+  .nav-numbers button{width:40px;height:36px;border-radius:6px;padding:0}
+  .nav-numbers button.current{background:#60a5fa}
+  .result{margin-top:12px}
+  .summary{margin-top:12px;max-height:320px;overflow:auto;padding:8px;border-radius:8px;border:1px solid #e6e6e6}
+  .footer{margin-top:14px;color:var(--muted);font-size:13px}
+</style>
+</head>
+<body>
+<form id="quizForm">
+<div class="wrap">
+  <!-- START CARD -->
+  <div class="card" id="startCard">
+    <header>
+      <div>
+        <h1>RRB Section Control — Full-Length Test</h1>
+        <div style="color:var(--muted);margin-top:6px">50 Questions | Time: 30 minutes | Each question = 1 mark</div>
+      </div>
+      <div style="text-align:right">
+        <div id="timer" style="display:none">30:00</div>
+        <div style="font-size:12px;color:var(--muted)">Time Remaining</div>
+      </div>
+    </header>
+
+    <div class="intro" style="margin-top:14px">
+      <p><strong>Instructions:</strong></p>
+      <ul>
+        <li>Enter your name and press <strong>Start Exam</strong>. The exam will go full-screen and the 30-minute timer will begin.</li>
+        <li>Do not exit full-screen or switch tabs — doing so will auto-submit your exam.</li>
+        <li>You may navigate using the numbered buttons, and submit when done. The timer will auto-submit when time ends.</li>
+      </ul>
+
+      <p><label>Student name (required)</label>
+      <input type="text" id="studentName" placeholder="Enter your full name" /></p>
+
+      <div class="controls">
+        <button id="startBtn">Start Exam</button>
+        <button class="secondary" id="demoBtn">Demo (No Fullscreen)</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- QUIZ CARD -->
+  <div class="card" id="quizCard" style="display:none;margin-top:14px">
+    <header style="align-items:flex-start">
+      <div>
+        <h2 id="qHeading">Question 1</h2>
+        <div style="color:var(--muted)" id="qCategory"></div>
+      </div>
+      <div style="text-align:right">
+        <div id="timerTop" style="font-weight:700;color:var(--danger);font-size:18px">30:00</div>
+        <div style="font-size:12px;color:var(--muted)">Time Remaining</div>
+      </div>
+    </header>
+
+    <div class="qbox" id="qbox"></div>
+    <div class="nav-numbers" id="navNumbers"></div>
+
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px">
+      <div>
+        <button id="prevBtn" class="secondary" type="button">◀ Prev</button>
+        <button id="nextBtn" type="button">Next ▶</button>
+      </div>
+      <div>
+        <button id="submitBtn" style="background:#16a34a" type="button">Submit Exam</button>
+      </div>
+    </div>
+
+    <div class="footer">You must remain in full-screen mode. Switching tabs or exiting full-screen will auto-submit.</div>
+  </div>
+
+  <!-- RESULT CARD -->
+  <div class="card" id="resultCard" style="display:none;margin-top:14px">
+    <h2>Exam Submitted</h2>
+    <div id="resultSummary" class="result"></div>
+    <div class="summary" id="detailSummary"></div>
+  </div>
+</div>
+</form>
+
+<script>
+// ---------------- QUIZ LOGIC ----------------
+const quiz = [
+  {cat:"General Aptitude", q:"If x² + 4x + 4 = 0, what is the value of x³ + 1/x³?", opts:["8","10","14","16"], ans:"10", marks:1},
+  {cat:"General Aptitude", q:"The average of five consecutive odd numbers is 35. The smallest number is:", opts:["25","27","31","33"], ans:"31", marks:1},
+  {cat:"General Aptitude", q:"A can do a job in 8 days, B in 12 days, and C in 24 days. In how many days will they complete the work together?", opts:["3","4","5","6"], ans:"4", marks:1},
+  {cat:"General Aptitude", q:"The sum of an infinite GP is 16 and the first term is 12. Find the common ratio.", opts:["1/3","1/4","2/3","3/4"], ans:"1/4", marks:1},
+  {cat:"General Aptitude", q:"The cost price of 12 pens equals the selling price of 8 pens. Find profit percent.", opts:["25%","33.33%","40%","50%"], ans:"50%", marks:1},
+  {cat:"General Aptitude", q:"If x + 1/x = 2, then x¹⁰ + 1/x¹⁰ =", opts:["2","10","20","1024"], ans:"2", marks:1},
+  {cat:"General Aptitude", q:"The compound interest on Rs. 10,000 for 2 years at 10% per annum is:", opts:["2000","2100","2200","2300"], ans:"2100", marks:1},
+  {cat:"General Aptitude", q:"The ratio of two numbers is 3:5. Their LCM is 120. Find the HCF.", opts:["8","10","12","15"], ans:"8", marks:1},
+  {cat:"General Aptitude", q:"The sum of first 20 natural numbers divisible by 3 is:", opts:["630","1230","6300","1260"], ans:"630", marks:1},
+  {cat:"General Aptitude", q:"The perimeter of a semicircle of radius 7 cm (π=22/7) is:", opts:["22","36","44","51"], ans:"36", marks:1},
+  {cat:"General Aptitude", q:"A train 300 m long crosses a pole in 15 seconds. Its speed (in km/h) is:", opts:["60","72","80","90"], ans:"72", marks:1},
+  {cat:"General Aptitude", q:"Two pipes can fill a tank in 12 and 16 minutes. A third pipe can empty it in 24 minutes. How long will they take together?", opts:["8","10","12","15"], ans:"8", marks:1},
+  {cat:"General Aptitude", q:"If a:b=2:3 and b:c=4:5, find a:b:c.", opts:["8:12:15","4:6:5","6:9:10","2:3:5"], ans:"8:12:15", marks:1},
+  {cat:"General Aptitude", q:"If 1/(2x) + 1/(3x) = 5/12, find x.", opts:["1","2","3","4"], ans:"2", marks:1},
+  {cat:"General Aptitude", q:"If the selling price of 15 articles equals cost price of 20 articles, find profit %.", opts:["25","30","33.33","50"], ans:"33.33", marks:1},
+  {cat:"General Aptitude", q:"A can complete a work in 15 days, B in 20 days. A works 5 days, then B finishes. Total days?", opts:["11","12","13","14"], ans:"12", marks:1},
+  {cat:"General Aptitude", q:"A and B invest in a business in ratio 3:5. After 8 months A withdraws. If total profit is Rs.4800, A’s share is:", opts:["1200","1350","1500","1600"], ans:"1200", marks:1},
+  {cat:"General Aptitude", q:"Simplify: (81)^(3/4) ÷ (27)^(2/3). where ^ means to the power", opts:["1","2","3","9"], ans:"3", marks:1},
+  {cat:"General Aptitude", q:"A sum triples in 10 years at simple interest. Rate % =", opts:["10","15","20","25"], ans:"20", marks:1},
+  {cat:"General Aptitude", q:"The median of 7, 9, 15, 19, 21, 25, 28 is:", opts:["15","17","19","21"], ans:"19", marks:1},
+  {cat:"General Aptitude", q:"Average production (in 000 units) of 25, 35, 30, 45, 40 is:", opts:["35","36","37","38"], ans:"35", marks:1},
+  {cat:"General Aptitude", q:"If exports increase 20% annually from 500 units, find amount after 3 years.", opts:["864","900","1000","1080"], ans:"864", marks:1},
+  {cat:"General Aptitude", q:"If total expenditure Rs.12000 and Rent = 30%, find amount spent on Rent.", opts:["2500","3000","3500","4000"], ans:"3600", marks:1},
+  {cat:"General Aptitude", q:"If population grows 10% yearly, starting at 1,00,000, population after 2 years =", opts:["110000","120000","121000","125000"], ans:"121000", marks:1},
+  {cat:"General Aptitude", q:"Sales of Product A: Jan 200, Feb 250, Mar 300. Percentage rise Feb→Mar =", opts:["15","18","20","25"], ans:"20", marks:1},
+  {cat:"General Aptitude", q:"All roses are flowers. Some flowers are red. Conclusions: (I) Some roses are red. (II) All red things are roses.", opts:["Only I","Only II","Both","Neither"], ans:"Neither", marks:1},
+  {cat:"General Aptitude", q:"Find missing term: 2, 5, 10, 17, 26, ?", opts:["35","37","38","39"], ans:"37", marks:1},
+  {cat:"General Aptitude", q:"If MONDAY = 654321, then FRIDAY = ?", opts:["659871","986751","691827","659827"], ans:"659827", marks:1},
+  {cat:"General Aptitude", q:"If * means +, / means −, + means ×, − means /, find value of 6 + 4 * 3 / 2 − 5.", opts:["13","11","9","7"], ans:"13", marks:1},
+  {cat:"General Aptitude", q:"Pointing to a boy, Rita says: 'He is the son of my father’s only son.' Rita is to the boy as:", opts:["Mother","Aunt","Sister","Cousin"], ans:"Sister", marks:1},
+  {cat:"General Aptitude", q:"Choose the odd one out: 2–4–8, 3–9–27, 4–8–16, 5–10–25", opts:["2–4–8","3–9–27","4–8–16","5–10–25"], ans:"4–8–16", marks:1},
+  {cat:"General Aptitude", q:"Find next in series: AZ, BY, CX, ?", opts:["DW","EV","FW","GX"], ans:"DW", marks:1},
+  {cat:"General Aptitude", q:"If 4$ means ×, 3# means −, 2@ means +, find 10 4 2@ 3 3#.", opts:["29","31","33","35"], ans:"31", marks:1},
+  {cat:"General Aptitude", q:"Arrange logically: 1. Birth 2. Death 3. Childhood 4. Adulthood 5. Old age", opts:["1-3-4-5-2","3-1-4-5-2","1-4-5-2-3","2-1-3-4-5"], ans:"1-3-4-5-2", marks:1},
+  {cat:"General Aptitude", q:"If A’s mother is B’s sister and B’s son is C, then A and C are:", opts:["Cousins","Siblings","Uncle/Nephew","Mother/Son"], ans:"Cousins", marks:1},
+  {cat:"General Aptitude", q:"Planet : Orbit :: Electron : ?", opts:["Atom","Nucleus","Proton","Neutron"], ans:"Nucleus", marks:1},
+  {cat:"General Aptitude", q:"Series: 3, 9, 27, 81, ?", opts:["162","200","243","324"], ans:"243", marks:1},
+  {cat:"General Aptitude", q:"Which word does not belong: Apple, Mango, Potato, Banana", opts:["Apple","Mango","Potato","Banana"], ans:"Potato", marks:1},
+  {cat:"General Aptitude", q:"If in a certain code CAT = DBU, what is DOG?", opts:["EPH","FPH","EPI","EOG"], ans:"EPH", marks:1},
+  {cat:"General Aptitude", q:"In a row of 50, A is 8th from top, B is 10th from bottom. How many between them?", opts:["31","32","33","34"], ans:"31", marks:1},
+  {cat:"General Aptitude", q:"In a family of 6, there are 2 married couples. How many generations minimum?", opts:["1","2","3","4"], ans:"2", marks:1},
+  {cat:"General Aptitude", q:"If 2 = 6, 3 = 12, 4 = 20, find 5 = ?", opts:["25","30","35","40"], ans:"30", marks:1},
+  // 8 new questions below
+  {cat:"General Aptitude", q:"If the perimeter of a square is 48 cm, find its area.", opts:["100","121","144","169"], ans:"144", marks:1},
+  {cat:"General Aptitude", q:"The simple interest on Rs. 5000 at 8% for 3 years is:", opts:["800","1000","1200","1500"], ans:"1200", marks:1},
+  {cat:"General Aptitude", q:"A train 180 m long passes a platform 220 m long in 20 seconds. Find its speed (km/h).", opts:["60","72","80","90"], ans:"72", marks:1},
+  {cat:"General Aptitude", q:"If the average of 10 numbers is 25, what is their total sum?", opts:["150","200","250","300"], ans:"250", marks:1},
+  {cat:"General Aptitude", q:"The ratio of angles of a triangle is 1:2:3. The largest angle is:", opts:["30°","60°","90°","120°"], ans:"90°", marks:1},
+  {cat:"General Aptitude", q:"The sum of first 15 even natural numbers is:", opts:["210","220","230","240"], ans:"240", marks:1},
+  {cat:"General Aptitude", q:"If a car travels 240 km in 4 hours, find its speed in m/s.", opts:["12","15","16.67","20"], ans:"16.67", marks:1},
+  {cat:"General Aptitude", q:"A sells an article at 20% profit. If cost price = Rs. 500, selling price =", opts:["550","600","620","700"], ans:"600", marks:1}
+];
+
+// STATE
+let currentIndex = 0;
+let responses = new Array(quiz.length).fill(null);
+let studentName = "";
+let timerSec = 30*60;
+let timerInterval = null;
+let examStarted = false;
+
+const startCard=document.getElementById('startCard'),
+      quizCard=document.getElementById('quizCard'),
+      resultCard=document.getElementById('resultCard'),
+      qHeading=document.getElementById('qHeading'),
+      qCategory=document.getElementById('qCategory'),
+      qbox=document.getElementById('qbox'),
+      navNumbers=document.getElementById('navNumbers'),
+      timerTop=document.getElementById('timerTop'),
+      timerMain=document.getElementById('timer');
+
+function escapeHtml(str){return String(str||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]))}
+
+function buildNav(){
+  navNumbers.innerHTML='';
+  quiz.forEach((_,i)=>{
+    const btn=document.createElement('button');
+    btn.type = "button"; // ✅ prevents form submission
+    btn.textContent = i + 1;
+    btn.dataset.idx = i;
+    btn.onclick = () => {
+      saveCurrent();
+      currentIndex = i;
+      renderQuestion();
+    };
+    navNumbers.appendChild(btn);
+  });
+}
+
+
+function renderQuestion(){
+  const item=quiz[currentIndex];
+  qHeading.textContent=`Question ${currentIndex+1}`;
+  qCategory.textContent=item.cat;
+  let html=`<div class="qtext">${item.q}</div>`;
+  item.opts.forEach((opt,i)=>{
+    const checked=(responses[currentIndex]===opt)?'checked':'';
+    html+=`<label class="opt"><input type="radio" name="opt" value="${escapeHtml(opt)}" ${checked}/> ${String.fromCharCode(65+i)}. ${opt}</label>`;
+  });
+  qbox.innerHTML=html;
+  Array.from(navNumbers.children).forEach((b,idx)=>b.classList.toggle('current',idx===currentIndex));
+}
+
+function saveCurrent(){
+  const sel=qbox.querySelector('input[name="opt"]:checked');
+  if(sel) responses[currentIndex]=sel.value;
+}
+
+function formatTime(s){const m=Math.floor(s/60),sec=s%60;return `${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;}
+
+function startExam(){
+  const nameInput=document.getElementById('studentName').value.trim();
+  if(!nameInput){alert('Enter your name');return;}
+  studentName=nameInput;
+  openFullscreen();
+  startCore();
+}
+function startDemo(){
+  studentName=document.getElementById('studentName').value.trim()||'Demo Student';
+  startCore(true);
+}
+function startCore(demo=false){
+  examStarted=true;
+  startCard.style.display='none'; quizCard.style.display='block';
+  timerMain.style.display=demo?'none':'block'; buildNav(); renderQuestion();
+  timerInterval=setInterval(()=>{
+    timerSec--; timerTop.textContent=formatTime(timerSec); timerMain.textContent=formatTime(timerSec);
+    if(timerSec<=0){clearInterval(timerInterval); alert('Time up'); finishExam();}
+  },1000);
+}
+function openFullscreen(){const el=document.documentElement; if(el.requestFullscreen) el.requestFullscreen();}
+function closeFullscreen(){if(document.exitFullscreen) document.exitFullscreen();}
+document.addEventListener('visibilitychange',()=>{if(examStarted&&document.hidden){alert('Tab switched. Auto-submit.');finishExam();}});
+document.addEventListener('fullscreenchange',()=>{if(examStarted&&!document.fullscreenElement){alert('Exited fullscreen. Auto-submit.');finishExam();}});
+
+document.getElementById('startBtn').addEventListener('click',e=>{e.preventDefault();startExam();});
+document.getElementById('demoBtn').addEventListener('click',e=>{e.preventDefault();startDemo();});
+document.getElementById('prevBtn').addEventListener('click',()=>{saveCurrent();if(currentIndex>0)currentIndex--;renderQuestion();});
+document.getElementById('nextBtn').addEventListener('click',()=>{saveCurrent();if(currentIndex<quiz.length-1)currentIndex++;renderQuestion();});
+document.getElementById('submitBtn').addEventListener('click',()=>{if(confirm('Submit exam?'))finishExam();});
+
+function finishExam(){
+  if(!examStarted) return;
+  examStarted=false; clearInterval(timerInterval); saveCurrent();
+  let score=0,max=0; const details=[];
+  quiz.forEach((it,i)=>{max+=it.marks;const got=(responses[i]===it.ans)?it.marks:0;score+=got;
+    details.push({q:it.q,given:responses[i]||'(no answer)',correct:it.ans,marks:got});
+  });
+  quizCard.style.display='none'; resultCard.style.display='block';
+  document.getElementById('resultSummary').innerHTML=`<p><strong>Name:</strong> ${escapeHtml(studentName)}<br><strong>Score:</strong> ${score}/${max}</p>`;
+  const d=document.getElementById('detailSummary'); d.innerHTML='';
+  details.forEach((r,i)=>{const el=document.createElement('div'); el.innerHTML=`<strong>Q${i+1}:</strong> ${r.q}<br>Your: ${r.given} | Correct: ${r.correct}`; d.appendChild(el);});
+
+  // --- send result to Google Script ---
+  fetch("https://script.google.com/macros/s/AKfycbym7870t9FYTGPZqgXjxzS2WdL4ye4uqfudkpfVQHAAJUUKn6DPt6RQRCIvlyHfJmSk/exec", {
+    method: "POST",
+    body: new URLSearchParams({
+      name: studentName,
+      score: score,
+      total: max,
+      answers: JSON.stringify(details)
+    })
+  })
+  .then(()=>console.log("Result sent"))
+  .catch(err=>console.error("Error sending result:",err));
+
+  try{closeFullscreen();}catch(e){}
+}
+</script>
+</body>
+</html>
