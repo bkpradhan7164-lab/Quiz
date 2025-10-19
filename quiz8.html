@@ -1,1 +1,329 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>RRB Section Control — Full-Length Test (50 Qs)</title>
+<style>
+  :root{--brand:#2563eb;--danger:#b91c1c;--muted:#6b7280}
+  body{font-family:system-ui,-apple-system,'Segoe UI',Roboto,Arial; background:#f8fafc; margin:0}
+  .wrap{max-width:1100px;margin:18px auto;padding:18px}
+  .card{background:#fff;border-radius:10px;padding:18px;box-shadow:0 6px 18px rgba(2,6,23,0.06)}
+  header{display:flex;justify-content:space-between;align-items:center;gap:12px}
+  h1{font-size:20px;margin:0}
+  #timer{font-weight:700;color:var(--danger);font-size:16px}
+  .intro ul{margin-top:6px}
+  input[type="text"]{width:100%;padding:8px;border-radius:6px;border:1px solid #e5e7eb}
+  .controls{display:flex;gap:8px;align-items:center;margin-top:12px}
+  button{background:var(--brand);color:#fff;padding:9px 12px;border-radius:8px;border:none;cursor:pointer}
+  button.secondary{background:#64748b}
+  .qbox{margin-top:14px}
+  .qtext{font-weight:600;margin-bottom:10px}
+  .opts{display:block;margin-bottom:6px}
+  label.opt{display:block;padding:10px;border-radius:8px;border:1px solid #e6e6e6;margin-bottom:8px;cursor:pointer;background:#fff}
+  label.opt input{margin-right:8px}
+  .nav-numbers{display:flex;flex-wrap:wrap;gap:6px;padding:10px 0}
+  .nav-numbers button{width:40px;height:36px;border-radius:6px;padding:0}
+  .nav-numbers button.current{background:#60a5fa}
+  .result{margin-top:12px}
+  .summary{margin-top:12px;max-height:320px;overflow:auto;padding:8px;border-radius:8px;border:1px solid #e6e6e6}
+  .footer{margin-top:14px;color:var(--muted);font-size:13px}
+</style>
+</head>
+<body>
+<form id="quizForm">
+<div class="wrap">
+  <!-- START CARD -->
+  <div class="card" id="startCard">
+    <header>
+      <div>
+        <h1>RRB Section Control — Full-Length Test 6</h1>
+        <div style="color:var(--muted);margin-top:6px">50 Questions | Time:30 minutes | Each question = 1 mark</div>
+      </div>
+      <div style="text-align:right">
+        <div id="timer" style="display:none">30:00</div>
+        <div style="font-size:12px;color:var(--muted)">Time Remaining</div>
+      </div>
+    </header>
 
+    <div class="intro" style="margin-top:14px">
+      <p><strong>Instructions:</strong></p>
+      <ul>
+        <li>Enter your name and press <strong>Start Exam</strong>. The exam will go full-screen and the 30-minute timer will begin.</li>
+        <li>Do not exit full-screen or switch tabs — doing so will auto-submit your exam.</li>
+        <li>You may navigate using the numbered buttons, and submit when done. The timer will auto-submit when time ends.</li>
+      </ul>
+
+      <p><label>Student name (required)</label>
+      <input type="text" id="studentName" placeholder="Enter your full name" /></p>
+
+      <div class="controls">
+        <button id="startBtn">Start Exam</button>
+        <button class="secondary" id="demoBtn">Demo (No Fullscreen)</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- QUIZ CARD -->
+  <div class="card" id="quizCard" style="display:none;margin-top:14px">
+    <header style="align-items:flex-start">
+      <div>
+        <h2 id="qHeading">Question 1</h2>
+        <div style="color:var(--muted)" id="qCategory"></div>
+      </div>
+      <div style="text-align:right">
+        <div id="timerTop" style="font-weight:700;color:var(--danger);font-size:18px">30:00</div>
+        <div style="font-size:12px;color:var(--muted)">Time Remaining</div>
+      </div>
+    </header>
+
+    <div class="qbox" id="qbox"></div>
+    <div class="nav-numbers" id="navNumbers"></div>
+
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px">
+      <div>
+        <button id="prevBtn" class="secondary" type="button">◀ Prev</button>
+        <button id="nextBtn" type="button">Next ▶</button>
+      </div>
+      <div>
+        <button id="submitBtn" style="background:#16a34a" type="button">Submit Exam</button>
+      </div>
+    </div>
+
+    <div class="footer">You must remain in full-screen mode. Switching tabs or exiting full-screen will auto-submit.</div>
+  </div>
+
+  <!-- RESULT CARD -->
+  <div class="card" id="resultCard" style="display:none;margin-top:14px">
+    <h2>Exam Submitted</h2>
+    <div id="resultSummary" class="result"></div>
+    <div class="summary" id="detailSummary"></div>
+  </div>
+</div>
+</form>
+
+<script>
+// ---------------- QUIZ LOGIC ----------------
+const quiz = [
+
+{cat:"Number Theory", q:"Find the remainder when 3^100 is divided by 50.", opts:["1","3","7","49"], ans:"1", marks:1, time:"3 min"},
+
+{cat:"Modular Arithmetic", q:"Remainder when 2^50 is divided by 7.", opts:["1","2","4","6"], ans:"1", marks:1, time:"3 min"},
+
+{cat:"Binomial Theorem", q:"Coefficient of x^5 in expansion of (1 + x)^10.", opts:["252","210","120","126"], ans:"252", marks:1, time:"3 min"},
+
+{cat:"Combinatorics", q:"How many distinct 5-letter strings can be formed from the letters of 'BANANA'?", opts:["60","30","120","90"], ans:"60", marks:1, time:"3 min"},
+
+{cat:"Permutation & Combination", q:"Number of ways to choose a committee of 3 men and 2 women from 6 men and 5 women.", opts:["200","150","180","210"], ans:"200", marks:1, time:"3 min"},
+
+{cat:"Advanced Algebra", q:"If x + y = 6 and xy = 8, find x^3 + y^3.", opts:["152","120","224","200"], ans:"152", marks:1, time:"3 min"},
+
+{cat:"Exponents & Logs", q:"If 3^a = 5 and 3^b = 7, find 3^(a + b).", opts:["35","12","1","-"], ans:"35", marks:1, time:"3 min"},
+
+{cat:"Hard Probability", q:"From 10 different books, in how many ways can 4 distinct books be arranged on a shelf so that two particular books are not together?", opts:["3600","2520","1680","5040"], ans:"2520", marks:1, time:"3 min"},
+
+{cat:"Probability – conditional", q:"Two cards are drawn without replacement from a pack of 52. What is the probability that both are kings?", opts:["1/221","1/169","1/132","1/442"], ans:"1/221", marks:1, time:"3 min"},
+
+{cat:"Geometry (Circles)", q:"Two concentric circles have radii 7 and 14. Find the area of the ring between them (take π = 22/7).", opts:["154","231","308","462"], ans:"231", marks:1, time:"3 min"},
+
+{cat:"Analytical Geometry", q:"Find the distance between points (3,4) and (-1,-2).", opts:["10","8","√104","√85"], ans:"√104", marks:1, time:"3 min"},
+
+{cat:"Hard Algebra", q:"Solve for x: x^4 - 5x^2 + 4 = 0. Find the sum of all positive roots.", opts:["√5","3","2","√2"], ans:"2", marks:1, time:"3 min"},
+
+{cat:"Diophantine", q:"Find the smallest positive integer n such that n mod 3 = 2, n mod 4 = 3, and n mod 5 = 4.", opts:["59","47","119","59"], ans:"59", marks:1, time:"3 min"},
+
+{cat:"LCM & HCF", q:"If HCF(a,b) = 12 and LCM(a,b) = 360, and a/b = 5/3, find a + b.", opts:["72","96","180","192"], ans:"192", marks:1, time:"3 min"},
+
+{cat:"Series (Advanced)", q:"Next term in the series: 2, 3, 5, 9, 17, ?", opts:["31","33","35","29"], ans:"33", marks:1, time:"3 min"},
+
+{cat:"Hard Work-Time", q:"Pipe A fills a tank in 12 hours, B in 15 hours, and C empties it in 20 hours. If all are opened together, find the time to fill the tank.", opts:["6","6.67","7.5","8"], ans:"6.67", marks:1, time:"3 min"},
+
+{cat:"Tricky Speed", q:"A covers half the distance at 30 km/h and the other half at 60 km/h. Find the average speed.", opts:["40 km/h","45 km/h","50 km/h","48 km/h"], ans:"40 km/h", marks:1, time:"3 min"},
+
+{cat:"Challenging Probability", q:"Three fair coins are tossed. Find the probability of getting exactly two consecutive heads (i.e., HH in positions 1–2 or 2–3 but not all three).", opts:["1/4","1/3","3/8","1/2"], ans:"1/4", marks:1, time:"3 min"},
+
+{cat:"DI – Percent change", q:"An item increases by 12% and then decreases by 10%. Find the net percentage change.", opts:["0.8% increase","1.2% increase","1.2% decrease","0.8% decrease"], ans:"0.8% increase", marks:1, time:"3 min"},
+
+{cat:"Hard Venn", q:"In a class of 120, 70 study A, 60 study B, 50 study C, 30 study both A & B, 25 both B & C, 20 both A & C, and 10 study all three. How many study none?", opts:["-5","0","5","10"], ans:"0", marks:1, time:"3 min"},
+
+{cat:"Data Interpretation", q:"Yearly sales were 100, 120, 150, and 180 over four years. Find the compound annual growth rate (CAGR) approximately.", opts:["19%","18%","20%","17%"], ans:"18%", marks:1, time:"3 min"},
+
+{cat:"Hard Combinatorics", q:"Number of ways to distribute 7 identical balls into 3 distinct boxes such that each box has at least one ball.", opts:["15","21","28","35"], ans:"21", marks:1, time:"3 min"},
+
+{cat:"Advanced Trigonometry", q:"If sin θ = 3/5 and θ is in the first quadrant, find tan θ + sec θ.", opts:["3/4 + 5/4","3/4 + 4/3","3/4 + 5/3","3/4 + 5/4"], ans:"3/4 + 5/4", marks:1, time:"3 min"},
+
+{cat:"Hard Logarithm", q:"If log₂(x - 1) = 3, find √x.", opts:["√9","√8","√16","√7"], ans:"√9", marks:1, time:"3 min"},
+
+{cat:"Advanced Number Theory", q:"Find the last two digits of 7^222.", opts:["01","43","49","07"], ans:"43", marks:1, time:"3 min"},
+
+{cat:"Hard Geometry", q:"A triangle has sides 13, 14, and 15. Find its area.", opts:["84","90","78","72"], ans:"84", marks:1, time:"3 min"},
+
+{cat:"Difficult Algebra", q:"If x + y + z = 0 and x^2 + y^2 + z^2 = 12, find xy + yz + zx.", opts:["-6","6","0","-12"], ans:"-6", marks:1, time:"3 min"},
+
+{cat:"Clock (Hard)", q:"Find the angle between the hands of a clock at 8:20.", opts:["50°","40°","30°","60°"], ans:"40°", marks:1, time:"3 min"},
+
+{cat:"Logic Grid", q:"Five persons P, Q, R, S, T sit in a row. P is left of Q; R is right of Q; S is not at the ends; T is between P and R. Who is in the middle?", opts:["P","Q","R","T"], ans:"Q", marks:1, time:"3 min"},
+
+{cat:"Number System", q:"Find the smallest number which when divided by 8, 9, and 12 leaves a remainder of 5 in each case.", opts:["365","365","365","365"], ans:"365", marks:1, time:"3 min"},
+
+{cat:"LCM-HCF", q:"If HCF of two numbers is 24 and their product is 2304, find their LCM.", opts:["96","48","84","72"], ans:"96", marks:1, time:"3 min"},
+
+{cat:"Average", q:"Average of five consecutive odd numbers is 45. Find the smallest number.", opts:["41","43","39","47"], ans:"41", marks:1, time:"3 min"},
+
+{cat:"Simplification", q:"Find value of 24 ÷ 4 × 3 + 5 × 2.", opts:["28","22","26","24"], ans:"28", marks:1, time:"3 min"},
+
+{cat:"Ratio & Proportion", q:"The ratio of income to expenditure is 5:3. If savings are ₹2000, find the income.", opts:["5000","6000","7000","8000"], ans:"5000", marks:1, time:"3 min"},
+
+{cat:"Compound Interest", q:"If the compound interest on ₹10,000 for 2 years at 10% p.a. is X, find X.", opts:["2100","2000","2200","2300"], ans:"2100", marks:1, time:"3 min"},
+
+{cat:"Profit & Loss", q:"A trader marks goods 40% above cost and gives a discount of 10%. Find profit percent.", opts:["26%","30%","28%","24%"], ans:"26%", marks:1, time:"3 min"},
+
+{cat:"Time & Work", q:"A and B can do a work in 12 and 16 days respectively. They work together for 4 days. Find remaining work.", opts:["1/3","3/5","1/2","2/3"], ans:"1/3", marks:1, time:"3 min"},
+
+{cat:"Speed & Distance", q:"A man covers 120 km in 4 hours partly by car at 40 km/h and partly by train at 60 km/h. Find the distance travelled by train.", opts:["60","80","40","70"], ans:"40", marks:1, time:"3 min"},
+
+{cat:"Mensuration", q:"Find the volume of a cone of radius 7 cm and height 24 cm. (Take π = 22/7)", opts:["1232","1234","1235","1236"], ans:"1232", marks:1, time:"3 min"},
+
+{cat:"Permutation", q:"How many 4-digit numbers can be formed from digits 1,2,3,4,5 without repetition?", opts:["120","60","24","100"], ans:"120", marks:1, time:"3 min"},
+
+{cat:"Combination", q:"In how many ways can a committee of 4 members be selected from 7 people?", opts:["35","40","30","28"], ans:"35", marks:1, time:"3 min"},
+
+{cat:"Probability", q:"Two dice are rolled. Find the probability that the sum is 9.", opts:["1/9","1/8","1/12","1/6"], ans:"1/9", marks:1, time:"3 min"},
+
+{cat:"Statistics", q:"Mean of 5 observations is 25. If one observation is removed, new mean is 24. Find the removed observation.", opts:["30","29","31","28"], ans:"30", marks:1, time:"3 min"},
+
+{cat:"Data Interpretation", q:"The price of sugar increased from ₹40/kg to ₹50/kg. What is the percentage increase?", opts:["25%","20%","22%","30%"], ans:"25%", marks:1, time:"3 min"},
+
+{cat:"Logical Reasoning", q:"If all pens are books, and all books are papers, which of the following is true?", opts:["All pens are papers","All papers are pens","All papers are books","None"], ans:"All pens are papers", marks:1, time:"3 min"},
+
+{cat:"Blood Relations", q:"A is the father of B, but B is not the son of A. How is that possible?", opts:["B is daughter","B is cousin","B is wife","B is mother"], ans:"B is daughter", marks:1, time:"3 min"},
+
+{cat:"Direction Sense", q:"A person walks 4 km north, 3 km east, then 4 km south. Find distance from starting point.", opts:["3 km","4 km","5 km","2 km"], ans:"3 km", marks:1, time:"3 min"},
+
+{cat:"Coding-Decoding", q:"If 'CAT' is coded as 24 and 'DOG' as 26, how is 'BAT' coded?", opts:["22","23","24","25"], ans:"22", marks:1, time:"3 min"},
+
+{cat:"Puzzle", q:"Four friends A, B, C, and D are sitting in a circle. A is to the left of B, C is opposite A. Who is to the right of C?", opts:["B","A","D","Cannot be determined"], ans:"B", marks:1, time:"3 min"},
+
+{cat:"Analogy", q:"Finger is to Hand as Leaf is to ?", opts:["Branch","Tree","Root","Flower"], ans:"Branch", marks:1, time:"3 min"}
+
+
+];
+
+// STATE
+let currentIndex = 0;
+let responses = new Array(quiz.length).fill(null);
+let studentName = "";
+let timerSec = 30*60;
+let timerInterval = null;
+let examStarted = false;
+
+const startCard=document.getElementById('startCard'),
+      quizCard=document.getElementById('quizCard'),
+      resultCard=document.getElementById('resultCard'),
+      qHeading=document.getElementById('qHeading'),
+      qCategory=document.getElementById('qCategory'),
+      qbox=document.getElementById('qbox'),
+      navNumbers=document.getElementById('navNumbers'),
+      timerTop=document.getElementById('timerTop'),
+      timerMain=document.getElementById('timer');
+
+function escapeHtml(str){return String(str||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]))}
+
+function buildNav(){
+  navNumbers.innerHTML='';
+  quiz.forEach((_,i)=>{
+    const btn=document.createElement('button');
+    btn.type = "button"; // ✅ prevents form submission
+    btn.textContent = i + 1;
+    btn.dataset.idx = i;
+    btn.onclick = () => {
+      saveCurrent();
+      currentIndex = i;
+      renderQuestion();
+    };
+    navNumbers.appendChild(btn);
+  });
+}
+
+
+function renderQuestion(){
+  const item=quiz[currentIndex];
+  qHeading.textContent=`Question ${currentIndex+1}`;
+  qCategory.textContent=item.cat;
+  let html=`<div class="qtext">${item.q}</div>`;
+  item.opts.forEach((opt,i)=>{
+    const checked=(responses[currentIndex]===opt)?'checked':'';
+    html+=`<label class="opt"><input type="radio" name="opt" value="${escapeHtml(opt)}" ${checked}/> ${String.fromCharCode(65+i)}. ${opt}</label>`;
+  });
+  qbox.innerHTML=html;
+  Array.from(navNumbers.children).forEach((b,idx)=>b.classList.toggle('current',idx===currentIndex));
+}
+
+function saveCurrent(){
+  const sel=qbox.querySelector('input[name="opt"]:checked');
+  if(sel) responses[currentIndex]=sel.value;
+}
+
+function formatTime(s){const m=Math.floor(s/60),sec=s%60;return `${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;}
+
+function startExam(){
+  const nameInput=document.getElementById('studentName').value.trim();
+  if(!nameInput){alert('Enter your name');return;}
+  studentName=nameInput;
+  openFullscreen();
+  startCore();
+}
+function startDemo(){
+  studentName=document.getElementById('studentName').value.trim()||'Demo Student';
+  startCore(true);
+}
+function startCore(demo=false){
+  examStarted=true;
+  startCard.style.display='none'; quizCard.style.display='block';
+  timerMain.style.display=demo?'none':'block'; buildNav(); renderQuestion();
+  timerInterval=setInterval(()=>{
+    timerSec--; timerTop.textContent=formatTime(timerSec); timerMain.textContent=formatTime(timerSec);
+    if(timerSec<=0){clearInterval(timerInterval); alert('Time up'); finishExam();}
+  },1000);
+}
+function openFullscreen(){const el=document.documentElement; if(el.requestFullscreen) el.requestFullscreen();}
+function closeFullscreen(){if(document.exitFullscreen) document.exitFullscreen();}
+document.addEventListener('visibilitychange',()=>{if(examStarted&&document.hidden){alert('Tab switched. Auto-submit.');finishExam();}});
+document.addEventListener('fullscreenchange',()=>{if(examStarted&&!document.fullscreenElement){alert('Exited fullscreen. Auto-submit.');finishExam();}});
+
+document.getElementById('startBtn').addEventListener('click',e=>{e.preventDefault();startExam();});
+document.getElementById('demoBtn').addEventListener('click',e=>{e.preventDefault();startDemo();});
+document.getElementById('prevBtn').addEventListener('click',()=>{saveCurrent();if(currentIndex>0)currentIndex--;renderQuestion();});
+document.getElementById('nextBtn').addEventListener('click',()=>{saveCurrent();if(currentIndex<quiz.length-1)currentIndex++;renderQuestion();});
+document.getElementById('submitBtn').addEventListener('click',()=>{if(confirm('Submit exam?'))finishExam();});
+
+function finishExam(){
+  if(!examStarted) return;
+  examStarted=false; clearInterval(timerInterval); saveCurrent();
+  let score=0,max=0; const details=[];
+  quiz.forEach((it,i)=>{max+=it.marks;const got=(responses[i]===it.ans)?it.marks:0;score+=got;
+    details.push({q:it.q,given:responses[i]||'(no answer)',correct:it.ans,marks:got});
+  });
+  quizCard.style.display='none'; resultCard.style.display='block';
+  document.getElementById('resultSummary').innerHTML=`<p><strong>Name:</strong> ${escapeHtml(studentName)}<br><strong>Score:</strong> ${score}/${max}</p>`;
+  const d=document.getElementById('detailSummary'); d.innerHTML='';
+  details.forEach((r,i)=>{const el=document.createElement('div'); el.innerHTML=`<strong>Q${i+1}:</strong> ${r.q}<br>Your: ${r.given} | Correct: ${r.correct}`; d.appendChild(el);});
+
+  // --- send result to Google Script ---
+  fetch("https://script.google.com/macros/s/AKfycbym7870t9FYTGPZqgXjxzS2WdL4ye4uqfudkpfVQHAAJUUKn6DPt6RQRCIvlyHfJmSk/exec", {
+    method: "POST",
+    body: new URLSearchParams({
+      name: studentName,
+      score: score,
+      total: max,
+      answers: JSON.stringify(details)
+    })
+  })
+  .then(()=>console.log("Result sent"))
+  .catch(err=>console.error("Error sending result:",err));
+
+  try{closeFullscreen();}catch(e){}
+}
+</script>
+</body>
+</html>
