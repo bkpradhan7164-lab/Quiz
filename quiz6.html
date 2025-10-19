@@ -1,0 +1,327 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>RRB Section Control — Full-Length Test (50 Qs)</title>
+<style>
+  :root{--brand:#2563eb;--danger:#b91c1c;--muted:#6b7280}
+  body{font-family:system-ui,-apple-system,'Segoe UI',Roboto,Arial; background:#f8fafc; margin:0}
+  .wrap{max-width:1100px;margin:18px auto;padding:18px}
+  .card{background:#fff;border-radius:10px;padding:18px;box-shadow:0 6px 18px rgba(2,6,23,0.06)}
+  header{display:flex;justify-content:space-between;align-items:center;gap:12px}
+  h1{font-size:20px;margin:0}
+  #timer{font-weight:700;color:var(--danger);font-size:16px}
+  .intro ul{margin-top:6px}
+  input[type="text"]{width:100%;padding:8px;border-radius:6px;border:1px solid #e5e7eb}
+  .controls{display:flex;gap:8px;align-items:center;margin-top:12px}
+  button{background:var(--brand);color:#fff;padding:9px 12px;border-radius:8px;border:none;cursor:pointer}
+  button.secondary{background:#64748b}
+  .qbox{margin-top:14px}
+  .qtext{font-weight:600;margin-bottom:10px}
+  .opts{display:block;margin-bottom:6px}
+  label.opt{display:block;padding:10px;border-radius:8px;border:1px solid #e6e6e6;margin-bottom:8px;cursor:pointer;background:#fff}
+  label.opt input{margin-right:8px}
+  .nav-numbers{display:flex;flex-wrap:wrap;gap:6px;padding:10px 0}
+  .nav-numbers button{width:40px;height:36px;border-radius:6px;padding:0}
+  .nav-numbers button.current{background:#60a5fa}
+  .result{margin-top:12px}
+  .summary{margin-top:12px;max-height:320px;overflow:auto;padding:8px;border-radius:8px;border:1px solid #e6e6e6}
+  .footer{margin-top:14px;color:var(--muted);font-size:13px}
+</style>
+</head>
+<body>
+<form id="quizForm">
+<div class="wrap">
+  <!-- START CARD -->
+  <div class="card" id="startCard">
+    <header>
+      <div>
+        <h1>RRB Section Control — Full-Length Test</h1>
+        <div style="color:var(--muted);margin-top:6px">60 Questions | Time:30 minutes | Each question = 1 mark</div>
+      </div>
+      <div style="text-align:right">
+        <div id="timer" style="display:none">30:00</div>
+        <div style="font-size:12px;color:var(--muted)">Time Remaining</div>
+      </div>
+    </header>
+
+    <div class="intro" style="margin-top:14px">
+      <p><strong>Instructions:</strong></p>
+      <ul>
+        <li>Enter your name and press <strong>Start Exam</strong>. The exam will go full-screen and the 30-minute timer will begin.</li>
+        <li>Do not exit full-screen or switch tabs — doing so will auto-submit your exam.</li>
+        <li>You may navigate using the numbered buttons, and submit when done. The timer will auto-submit when time ends.</li>
+      </ul>
+
+      <p><label>Student name (required)</label>
+      <input type="text" id="studentName" placeholder="Enter your full name" /></p>
+
+      <div class="controls">
+        <button id="startBtn">Start Exam</button>
+        <button class="secondary" id="demoBtn">Demo (No Fullscreen)</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- QUIZ CARD -->
+  <div class="card" id="quizCard" style="display:none;margin-top:14px">
+    <header style="align-items:flex-start">
+      <div>
+        <h2 id="qHeading">Question 1</h2>
+        <div style="color:var(--muted)" id="qCategory"></div>
+      </div>
+      <div style="text-align:right">
+        <div id="timerTop" style="font-weight:700;color:var(--danger);font-size:18px">30:00</div>
+        <div style="font-size:12px;color:var(--muted)">Time Remaining</div>
+      </div>
+    </header>
+
+    <div class="qbox" id="qbox"></div>
+    <div class="nav-numbers" id="navNumbers"></div>
+
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px">
+      <div>
+        <button id="prevBtn" class="secondary" type="button">◀ Prev</button>
+        <button id="nextBtn" type="button">Next ▶</button>
+      </div>
+      <div>
+        <button id="submitBtn" style="background:#16a34a" type="button">Submit Exam</button>
+      </div>
+    </div>
+
+    <div class="footer">You must remain in full-screen mode. Switching tabs or exiting full-screen will auto-submit.</div>
+  </div>
+
+  <!-- RESULT CARD -->
+  <div class="card" id="resultCard" style="display:none;margin-top:14px">
+    <h2>Exam Submitted</h2>
+    <div id="resultSummary" class="result"></div>
+    <div class="summary" id="detailSummary"></div>
+  </div>
+</div>
+</form>
+
+<script>
+// ---------------- QUIZ LOGIC ----------------
+const quiz = [
+{cat:"Algebra", q:"If (x + 1/x) = 3, find the value of (x³ + 1/x³).", opts:["24","27","30","33"], ans:"24", marks:1, time:"2 min"},
+
+{cat:"Number System", q:"If x = 0.272727..., then (100x - x) = ?", opts:["27/99","27/100","27/90","27/99"], ans:"27/99", marks:1, time:"2 min"},
+
+{cat:"Ratio & Proportion", q:"A:B = 2:3 and B:C = 4:5, find A:C.", opts:["8:15","3:5","4:7","2:5"], ans:"8:15", marks:1, time:"2 min"},
+
+{cat:"Percentages", q:"A number is increased by 20% and then decreased by 20%. Find the net change.", opts:["4% decrease","No change","2% decrease","4% increase"], ans:"4% decrease", marks:1, time:"2 min"},
+
+{cat:"Profit & Loss", q:"A man sells two articles at ₹1200 each, gaining 20% on one and losing 20% on the other. Find his overall gain/loss %. ", opts:["4% loss","2% loss","No loss","5% loss"], ans:"4% loss", marks:1, time:"2 min"},
+
+{cat:"Time, Speed & Distance", q:"A car travels from A to B at 60 km/h and returns at 40 km/h. Find average speed.", opts:["48 km/h","50 km/h","52 km/h","45 km/h"], ans:"48 km/h", marks:1, time:"2 min"},
+
+{cat:"Work & Time", q:"A can complete a work in 8 days and B in 12 days. If they work alternately starting with A, in how many days will the work be completed?", opts:["9 3/5","9 1/2","10","8 2/3"], ans:"9 3/5", marks:1, time:"2 min"},
+
+{cat:"Geometry", q:"The difference between the circumferences of two circles is 132 cm and the difference between their radii is 21 cm. Find the radius of the smaller circle (π=22/7).", opts:["14 cm","21 cm","7 cm","28 cm"], ans:"14 cm", marks:1, time:"2 min"},
+
+{cat:"Probability", q:"A bag contains 5 red, 4 green and 3 blue balls. Two balls are drawn at random. Find the probability that both are green.", opts:["1/11","2/11","1/33","3/11"], ans:"2/11", marks:1, time:"2 min"},
+
+{cat:"Data Interpretation", q:"If a company's revenue increased by 20% each year for 2 years from ₹10,000, what is the total revenue at end of 2 years?", opts:["12,000","12,400","14,400","14,000"], ans:"14,400", marks:1, time:"2 min"},
+
+{cat:"Syllogism", q:"Statements: All roses are flowers. Some flowers are red. Conclusions: I) Some roses are red. II) All red are flowers.", opts:["Only II follows","Only I follows","Both I and II follow","Neither follows"], ans:"Only II follows", marks:1, time:"2 min"},
+
+{cat:"Binary Logic", q:"Three persons A, B, C make statements. A: 'B is lying'; B: 'C is lying'; C: 'A and B both are lying'. Who is telling the truth?", opts:["A only","C only","B only","All lying"], ans:"C only", marks:1, time:"2 min"},
+
+{cat:"Blood Relations", q:"Pointing to a man, Rita said, 'He is the husband of my mother’s only daughter'. How is the man related to Rita?", opts:["Brother","Father","Uncle","Cousin"], ans:"Father", marks:1, time:"2 min"},
+
+{cat:"Analogy", q:"Cup : Coffee :: Bowl : ?", opts:["Soup","Plate","Spoon","Table"], ans:"Soup", marks:1, time:"2 min"},
+
+{cat:"Series Completion", q:"2, 6, 12, 20, 30, ?", opts:["40","42","44","46"], ans:"42", marks:1, time:"2 min"},
+
+{cat:"Coding-Decoding", q:"If FLOWER is coded as 59 and TREE as 43, then how is FRUIT coded?", opts:["52","54","56","58"], ans:"54", marks:1, time:"2 min"},
+
+{cat:"Ranking", q:"In a class of 50 students, A is 9th from top and B is 13th from bottom. How many students are between A and B?", opts:["27","28","29","30"], ans:"27", marks:1, time:"2 min"},
+
+{cat:"Arrangement", q:"Five friends are sitting in a line. A is left of B, C is right of B, D is between A and B. Who is in the middle?", opts:["D","B","A","C"], ans:"D", marks:1, time:"2 min"},
+
+{cat:"Direction Sense", q:"A man walks 5 km north, then 3 km east, then 2 km south. How far is he from the starting point?", opts:["6 km","5.83 km","5 km","4 km"], ans:"5.83 km", marks:1, time:"2 min"},
+
+{cat:"Critical Reasoning", q:"Statement: 'All successful people are hard workers.' Assumption: 'Hard work leads to success.'", opts:["Implicit","Not implicit","Partially implicit","Uncertain"], ans:"Implicit", marks:1, time:"2 min"},
+
+{cat:"Number System", q:"Find the smallest number which when divided by 12, 16, and 20 leaves the same remainder 3.", opts:["243","243","243","243"], ans:"243", marks:1, time:"2 min"},
+
+{cat:"LCM & HCF", q:"The product of two numbers is 4320 and their HCF is 12. Find their LCM.", opts:["360","320","340","380"], ans:"360", marks:1, time:"2 min"},
+
+{cat:"Algebra", q:"If (x + y) = 10 and xy = 21, find x² + y².", opts:["58","59","60","61"], ans:"58", marks:1, time:"2 min"},
+
+{cat:"Quadratic Equations", q:"If roots of x² - 5x + k = 0 are equal, find k.", opts:["25/4","9/4","5/4","4"], ans:"25/4", marks:1, time:"2 min"},
+
+{cat:"Arithmetic Progression", q:"Find the 20th term of an AP whose 3rd term is 7 and 7th term is 15.", opts:["31","35","33","37"], ans:"35", marks:1, time:"2 min"},
+
+{cat:"Geometry", q:"In a triangle, if one angle is 90° and sides opposite to the other two angles are 3 cm and 4 cm, find the hypotenuse.", opts:["5 cm","6 cm","7 cm","8 cm"], ans:"5 cm", marks:1, time:"2 min"},
+
+{cat:"Mensuration", q:"Find the area of a trapezium whose parallel sides are 10 cm and 6 cm and height is 4 cm.", opts:["32","36","40","48"], ans:"32", marks:1, time:"2 min"},
+
+{cat:"Area & Volume", q:"A cylindrical tank has radius 3 m and height 7 m. Find its volume (π=22/7).", opts:["198","200","210","220"], ans:"198", marks:1, time:"2 min"},
+
+{cat:"Time, Speed & Distance", q:"A man covers half the distance at 30 km/h and the other half at 60 km/h. Find his average speed.", opts:["40 km/h","45 km/h","50 km/h","42 km/h"], ans:"40 km/h", marks:1, time:"2 min"},
+
+{cat:"Work & Time", q:"A can do a work in 15 days, B is 50% more efficient than A. Together they can finish it in how many days?", opts:["6","7","8","9"], ans:"6", marks:1, time:"2 min"},
+
+{cat:"Ratio & Proportion", q:"If 3x : 5y = 6 : 10, find x : y.", opts:["1:1","2:3","3:4","4:5"], ans:"1:1", marks:1, time:"2 min"},
+
+{cat:"Simple Interest", q:"Find the simple interest on ₹12000 at 10% per annum for 3 years.", opts:["₹3600","₹3000","₹3200","₹2800"], ans:"₹3600", marks:1, time:"2 min"},
+
+{cat:"Compound Interest", q:"Find compound interest on ₹5000 at 10% per annum for 2 years, compounded annually.", opts:["₹1000","₹1050","₹1100","₹1200"], ans:"₹1050", marks:1, time:"2 min"},
+
+{cat:"Percentages", q:"A’s income is 20% more than B’s. By what percent is B’s income less than A’s?", opts:["16.67%","15%","18%","20%"], ans:"16.67%", marks:1, time:"2 min"},
+
+{cat:"Profit & Loss", q:"A trader sells goods at 15% profit. If his cost price was ₹800, what is the selling price?", opts:["₹900","₹920","₹940","₹960"], ans:"₹920", marks:1, time:"2 min"},
+
+{cat:"Partnership", q:"A invests ₹10,000 for 8 months, B invests ₹15,000 for 4 months. Find their profit ratio.", opts:["1:1","4:3","5:4","2:1"], ans:"1:1", marks:1, time:"2 min"},
+
+{cat:"Boats & Streams", q:"Speed of boat in still water = 8 km/h, speed of stream = 2 km/h. Find time to cover 30 km downstream.", opts:["3 hrs","3.5 hrs","4 hrs","2.5 hrs"], ans:"3 hrs", marks:1, time:"2 min"},
+
+{cat:"Pipes & Cisterns", q:"Two pipes can fill a tank in 20 and 30 min respectively. If both are opened together, in how many minutes will the tank be filled?", opts:["10","12","15","18"], ans:"12", marks:1, time:"2 min"},
+
+{cat:"Mixtures & Alligation", q:"In what ratio should 30% and 60% acid solutions be mixed to get a 50% solution?", opts:["1:2","2:1","3:2","2:3"], ans:"2:1", marks:1, time:"2 min"},
+
+{cat:"Probability", q:"A card is drawn from a pack of 52 cards. Find probability of getting a face card.", opts:["3/13","1/4","1/13","4/13"], ans:"3/13", marks:1, time:"2 min"},
+
+{cat:"Algebra – Exponents", q:"If $x^{x} = 4$, find the value of $x^{x+2}$.", opts:["8","16","32","64"], ans:"16", marks:1, time:"3 min"},
+
+{cat:"Permutation & Combination", q:"How many 5-letter words can be formed using letters of 'EQUATION' without repetition and containing at least one vowel?", opts:["6720","5040","4200","3360"], ans:"6720", marks:1, time:"3 min"},
+
+{cat:"Number Theory", q:"Find the remainder when $7^{103}$ is divided by 100.", opts:["43","49","57","87"], ans:"43", marks:1, time:"3 min"},
+
+{cat:"Data Interpretation", q:"A company’s revenue increased by 20%, 25%, and 10% in three successive years. Find the overall percentage increase.", opts:["61.5%","62.5%","55%","58%"], ans:"62.5%", marks:1, time:"3 min"},
+
+{cat:"Logical Puzzle", q:"Five friends — A, B, C, D, E — live in consecutive floors of a 5-storey building. A lives above C but below E. B does not live on an even-numbered floor. D lives above A but not on the top floor. Who lives on the top floor?", opts:["E","D","C","A"], ans:"E", marks:1, time:"3 min"},
+
+{cat:"Probability – Conditional", q:"A bag has 5 red, 3 blue, and 2 green balls. Two are drawn at random. What is the probability that both are red, given that both are of same color?", opts:["5/14","1/3","1/2","3/7"], ans:"5/14", marks:1, time:"3 min"},
+
+{cat:"Syllogism", q:"Statements: All scientists are intelligent. Some intelligent people are not honest. Conclusions: I) Some scientists may not be honest. II) All honest people are intelligent.", opts:["Only I follows","Only II follows","Both follow","Neither follows"], ans:"Only I follows", marks:1, time:"3 min"},
+
+{cat:"Data Sufficiency", q:"Find the value of x. (1) x² + y² = 25 (2) x + y = 9", opts:["1 alone","2 alone","Both needed","None"], ans:"Both needed", marks:1, time:"3 min"},
+
+{cat:"Clock – Circular Reasoning", q:"At what time between 7 and 8 will the hands of a clock be exactly opposite?", opts:["7:21 49/11","7:22","7:23","7:24"], ans:"7:21 49/11", marks:1, time:"3 min"},
+
+{cat:"Logical Deduction", q:"Statement: No teachers are careless. All scientists are teachers. Conclusion: I) All scientists are not careless. II) Some careless are not teachers.", opts:["Only I follows","Only II follows","Both","None"], ans:"Only I follows", marks:1, time:"3 min"}
+
+];
+
+// STATE
+let currentIndex = 0;
+let responses = new Array(quiz.length).fill(null);
+let studentName = "";
+let timerSec = 30*60;
+let timerInterval = null;
+let examStarted = false;
+
+const startCard=document.getElementById('startCard'),
+      quizCard=document.getElementById('quizCard'),
+      resultCard=document.getElementById('resultCard'),
+      qHeading=document.getElementById('qHeading'),
+      qCategory=document.getElementById('qCategory'),
+      qbox=document.getElementById('qbox'),
+      navNumbers=document.getElementById('navNumbers'),
+      timerTop=document.getElementById('timerTop'),
+      timerMain=document.getElementById('timer');
+
+function escapeHtml(str){return String(str||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]))}
+
+function buildNav(){
+  navNumbers.innerHTML='';
+  quiz.forEach((_,i)=>{
+    const btn=document.createElement('button');
+    btn.type = "button"; // ✅ prevents form submission
+    btn.textContent = i + 1;
+    btn.dataset.idx = i;
+    btn.onclick = () => {
+      saveCurrent();
+      currentIndex = i;
+      renderQuestion();
+    };
+    navNumbers.appendChild(btn);
+  });
+}
+
+
+function renderQuestion(){
+  const item=quiz[currentIndex];
+  qHeading.textContent=`Question ${currentIndex+1}`;
+  qCategory.textContent=item.cat;
+  let html=`<div class="qtext">${item.q}</div>`;
+  item.opts.forEach((opt,i)=>{
+    const checked=(responses[currentIndex]===opt)?'checked':'';
+    html+=`<label class="opt"><input type="radio" name="opt" value="${escapeHtml(opt)}" ${checked}/> ${String.fromCharCode(65+i)}. ${opt}</label>`;
+  });
+  qbox.innerHTML=html;
+  Array.from(navNumbers.children).forEach((b,idx)=>b.classList.toggle('current',idx===currentIndex));
+}
+
+function saveCurrent(){
+  const sel=qbox.querySelector('input[name="opt"]:checked');
+  if(sel) responses[currentIndex]=sel.value;
+}
+
+function formatTime(s){const m=Math.floor(s/60),sec=s%60;return `${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;}
+
+function startExam(){
+  const nameInput=document.getElementById('studentName').value.trim();
+  if(!nameInput){alert('Enter your name');return;}
+  studentName=nameInput;
+  openFullscreen();
+  startCore();
+}
+function startDemo(){
+  studentName=document.getElementById('studentName').value.trim()||'Demo Student';
+  startCore(true);
+}
+function startCore(demo=false){
+  examStarted=true;
+  startCard.style.display='none'; quizCard.style.display='block';
+  timerMain.style.display=demo?'none':'block'; buildNav(); renderQuestion();
+  timerInterval=setInterval(()=>{
+    timerSec--; timerTop.textContent=formatTime(timerSec); timerMain.textContent=formatTime(timerSec);
+    if(timerSec<=0){clearInterval(timerInterval); alert('Time up'); finishExam();}
+  },1000);
+}
+function openFullscreen(){const el=document.documentElement; if(el.requestFullscreen) el.requestFullscreen();}
+function closeFullscreen(){if(document.exitFullscreen) document.exitFullscreen();}
+document.addEventListener('visibilitychange',()=>{if(examStarted&&document.hidden){alert('Tab switched. Auto-submit.');finishExam();}});
+document.addEventListener('fullscreenchange',()=>{if(examStarted&&!document.fullscreenElement){alert('Exited fullscreen. Auto-submit.');finishExam();}});
+
+document.getElementById('startBtn').addEventListener('click',e=>{e.preventDefault();startExam();});
+document.getElementById('demoBtn').addEventListener('click',e=>{e.preventDefault();startDemo();});
+document.getElementById('prevBtn').addEventListener('click',()=>{saveCurrent();if(currentIndex>0)currentIndex--;renderQuestion();});
+document.getElementById('nextBtn').addEventListener('click',()=>{saveCurrent();if(currentIndex<quiz.length-1)currentIndex++;renderQuestion();});
+document.getElementById('submitBtn').addEventListener('click',()=>{if(confirm('Submit exam?'))finishExam();});
+
+function finishExam(){
+  if(!examStarted) return;
+  examStarted=false; clearInterval(timerInterval); saveCurrent();
+  let score=0,max=0; const details=[];
+  quiz.forEach((it,i)=>{max+=it.marks;const got=(responses[i]===it.ans)?it.marks:0;score+=got;
+    details.push({q:it.q,given:responses[i]||'(no answer)',correct:it.ans,marks:got});
+  });
+  quizCard.style.display='none'; resultCard.style.display='block';
+  document.getElementById('resultSummary').innerHTML=`<p><strong>Name:</strong> ${escapeHtml(studentName)}<br><strong>Score:</strong> ${score}/${max}</p>`;
+  const d=document.getElementById('detailSummary'); d.innerHTML='';
+  details.forEach((r,i)=>{const el=document.createElement('div'); el.innerHTML=`<strong>Q${i+1}:</strong> ${r.q}<br>Your: ${r.given} | Correct: ${r.correct}`; d.appendChild(el);});
+
+  // --- send result to Google Script ---
+  fetch("https://script.google.com/macros/s/AKfycbym7870t9FYTGPZqgXjxzS2WdL4ye4uqfudkpfVQHAAJUUKn6DPt6RQRCIvlyHfJmSk/exec", {
+    method: "POST",
+    body: new URLSearchParams({
+      name: studentName,
+      score: score,
+      total: max,
+      answers: JSON.stringify(details)
+    })
+  })
+  .then(()=>console.log("Result sent"))
+  .catch(err=>console.error("Error sending result:",err));
+
+  try{closeFullscreen();}catch(e){}
+}
+</script>
+</body>
+</html>
