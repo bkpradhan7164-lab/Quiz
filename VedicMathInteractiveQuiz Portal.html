@@ -1,0 +1,715 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Vedic Mathematics — Interactive Quiz Portal</title>
+<style>
+  /* ===== VEDIC MINIMAL THEME ===== */
+  :root{
+    --bg:#fffaf0;         /* cream */
+    --maroon:#6b1818;     /* primary */
+    --gold:#c4a000;       /* accent */
+    --muted:#6b6b6b;
+    --card:#fff6e8;
+    --ok:#1f7a3a;
+    --danger:#b91c1c;
+    --radius:12px;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, "Noto Sans";
+    background: linear-gradient(180deg, var(--bg), #fffdf8 120%);
+    color:#222;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1100px;margin:20px auto;padding:20px}
+  .card{
+    background:linear-gradient(180deg, var(--card), #fff);
+    border-radius:var(--radius);
+    padding:18px;
+    box-shadow:0 8px 30px rgba(23,18,12,0.06);
+    border:1px solid rgba(107,24,24,0.03);
+  }
+  header.top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .brand{display:flex;flex-direction:column}
+  h1{margin:0;color:var(--maroon);font-size:20px;letter-spacing:0.2px}
+  .subtitle{color:var(--muted);font-size:13px;margin-top:6px}
+  .controls{display:flex;gap:10px;align-items:center;margin-top:14px;flex-wrap:wrap}
+  .btn{
+    background:var(--maroon);color:#fff;border:none;padding:10px 14px;border-radius:10px;cursor:pointer;font-weight:600;
+    box-shadow:0 6px 14px rgba(107,24,24,0.12);
+  }
+  .btn.secondary{background:transparent;color:var(--maroon);border:2px solid rgba(107,24,24,0.08)}
+  .btn.ghost{background:transparent;border:none;color:var(--muted)}
+  label{display:block;margin-top:8px;font-weight:600;color:#333}
+  input[type="text"], input[type="number"], select{
+    width:100%;padding:10px;border-radius:8px;border:1px solid #eee;background:#fff;margin-top:6px;
+  }
+  .meta{color:var(--muted);font-size:13px;margin-top:6px}
+  .grid{display:grid;grid-template-columns:1fr 360px;gap:14px}
+  .demo-list{max-height:62vh;overflow:auto;padding:8px;border-radius:8px;border:1px solid #f0e7d6;background:#fff}
+  .q-row{padding:12px;border-radius:10px;margin-bottom:10px;background:linear-gradient(180deg,#fff,#fffdf8);border:1px solid #f1e8d6}
+  .q-row h3{margin:0;font-size:15px;color:var(--maroon)}
+  .q-row .small{font-size:13px;color:var(--muted);margin-top:6px}
+  .correct{background:linear-gradient(90deg,#f0fff4,#ffffff);border-left:6px solid var(--ok)}
+  .wrong{background:linear-gradient(90deg,#fff6f7,#ffffff);border-left:6px solid var(--danger)}
+  .timer-ring{width:60px;height:60px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:3px solid rgba(196,160,0,0.18)}
+  .timer-text{font-weight:700;color:var(--maroon)}
+  .qbox{margin-top:14px}
+  .qtext{font-weight:700;color:#2b2b2b;margin-bottom:10px;font-size:18px}
+  .footer{margin-top:14px;color:var(--muted);font-size:13px}
+  .summary{margin-top:12px;max-height:48vh;overflow:auto;padding:10px;border-radius:8px;border:1px solid #f0e7d6;background:#fff}
+  .center{display:flex;align-items:center;gap:10px}
+  .small{font-size:13px;color:var(--muted)}
+  @media (max-width:980px){ .grid{grid-template-columns:1fr} }
+
+  /* Popup modal (instant, no fade) */
+  .modal-backdrop{ position:fixed; inset:0; background:rgba(0,0,0,0.35); display:flex; align-items:center; justify-content:center; z-index:9999; }
+  .modal{ width:420px; background:linear-gradient(180deg,var(--card),#fff); border-radius:12px; padding:18px; box-shadow:0 18px 50px rgba(0,0,0,0.25); border:1px solid rgba(0,0,0,0.04);}
+  .modal h3{margin:0;color:var(--maroon)}
+  .modal .row{margin-top:10px}
+</style>
+</head>
+<body>
+<form id="quizForm" onsubmit="return false;">
+  <div class="wrap">
+    <!-- START -->
+    <div class="card" id="startCard">
+      <div class="top">
+        <div class="brand">
+          <h1>Vedic Mathematics — Interactive Quiz Portal</h1>
+          <div class="subtitle">Timed practice & full-length tests — Vedic-style quick methods</div>
+        </div>
+        <div style="text-align:right">
+          <div class="meta">Numeric answers only • Bell rings 5s before timeout</div>
+        </div>
+      </div>
+
+      <div style="margin-top:14px">
+        <label>Student name (required)</label>
+        <input type="text" id="studentName" placeholder="Enter your full name" autocomplete="off" />
+        <div class="controls">
+          <button id="demoPracticeBtn" class="btn" type="button">🧩 Demo Practice</button>
+          <button id="fullTestBtn" class="btn" type="button">📜 Full-Length Timed Test</button>
+          <button id="settingsBtn" class="btn secondary" type="button">⚙ Settings</button>
+        </div>
+        <div class="meta" style="margin-top:10px">Demo: choose chapter, #questions & time per question. Full Test: 240 questions, 30s fixed.</div>
+      </div>
+    </div>
+
+    <!-- DEMO RUN (one-by-one) -->
+    <div class="card" id="demoCard" style="display:none;margin-top:14px">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <h2 id="demoHeading" style="margin:0;color:var(--maroon)"></h2>
+          <div class="meta" id="demoMeta">Student: </div>
+        </div>
+        <div class="center">
+          <div class="timer-ring"><div id="demoTimer" class="timer-text">00</div></div>
+        </div>
+      </div>
+
+      <div class="qbox" id="demoQbox" style="margin-top:14px"></div>
+
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px">
+        <div class="small">Question <span id="demoIndex">1</span> of <span id="demoTotal">20</span></div>
+        <div>
+          <button id="demoSubmitBtn" class="btn">Submit Answer</button>
+          <button id="demoNextBtn" class="btn secondary" type="button">Skip / Next</button>
+        </div>
+      </div>
+
+      <div class="footer" style="margin-top:12px">
+        <button id="demoFinishBtn" class="btn ghost" type="button">Finish Demo Early</button>
+      </div>
+    </div>
+
+    <!-- DEMO SUMMARY -->
+    <div class="card" id="demoSummaryCard" style="display:none;margin-top:14px">
+      <h2 style="color:var(--maroon);margin:0">Demo Results</h2>
+      <div class="meta" id="demoSummaryMeta" style="margin-top:8px"></div>
+
+      <div class="summary" id="demoSummaryList"></div>
+
+      <div style="margin-top:12px" class="controls">
+        <button id="demoRetakeBtn" class="btn">Retake Demo</button>
+        <button id="demoBackToStartBtn" class="btn secondary">Back to Start</button>
+      </div>
+    </div>
+
+    <!-- FULL TEST (one-by-one) -->
+    <div class="card" id="fullCard" style="display:none;margin-top:14px">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <h2 id="fullHeading" style="margin:0;color:var(--maroon)">Full-Length Timed Test</h2>
+          <div class="meta">240 questions — 30s each (fixed)</div>
+        </div>
+        <div class="center">
+          <div class="timer-ring"><div id="fullTimerTop" class="timer-text">00:30</div></div>
+        </div>
+      </div>
+
+      <div class="qbox" id="fullQbox" style="margin-top:14px"></div>
+
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px">
+        <div class="small">Question <span id="fullIndex">1</span> of <span id="fullTotal">240</span></div>
+        <div>
+          <button id="fullSubmitBtn" class="btn">Submit Answer</button>
+          <button id="fullQuitBtn" class="btn secondary">Quit & Submit</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- FULL SUMMARY -->
+    <div class="card" id="fullSummaryCard" style="display:none;margin-top:14px">
+      <h2 style="color:var(--maroon);margin:0">Test Results</h2>
+      <div class="meta" id="fullSummaryMeta" style="margin-top:8px"></div>
+
+      <div class="summary" id="fullSummaryList"></div>
+
+      <div style="margin-top:12px" class="controls">
+        <button id="fullBackToStartBtn" class="btn secondary">Back to Start</button>
+      </div>
+    </div>
+
+    <!-- SETTINGS CARD -->
+    <div class="card" id="settingsCard" style="display:none;margin-top:14px">
+      <h2 style="margin:0;color:var(--maroon)">Settings</h2>
+      <div style="margin-top:12px">
+        <label>Default demo questions</label>
+        <input id="setDemoCount" type="number" min="5" max="20" value="20" />
+        <label>Default demo time per question (seconds)</label>
+        <input id="setDemoTime" type="number" min="5" max="600" value="30" />
+        <div class="controls" style="margin-top:12px">
+          <button id="saveSettingsBtn" class="btn">Save</button>
+          <button id="closeSettingsBtn" class="btn secondary">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</form>
+
+<!-- Modal markup (hidden initially) -->
+<div id="demoModal" style="display:none">
+  <div class="modal-backdrop" id="modalBackdrop">
+    <div class="modal" role="dialog" aria-modal="true">
+      <h3>Demo Practice — Settings</h3>
+      <div class="row">
+        <label>Chapter</label>
+        <select id="modalChapter"></select>
+      </div>
+      <div class="row">
+        <label>Number of questions (5–20)</label>
+        <input id="modalCount" type="number" min="5" max="20" value="20" />
+      </div>
+      <div class="row">
+        <label>Time per question (seconds)</label>
+        <input id="modalTime" type="number" min="5" max="600" value="30" />
+      </div>
+      <div style="margin-top:12px;display:flex;gap:8px;justify-content:flex-end">
+        <button id="modalStart" class="btn">Start Demo</button>
+        <button id="modalCancel" class="btn secondary">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ====== Embedded soft bell (base64) ====== -->
+
+<audio id="bellAudio">
+  <!-- small soft bell (wav) base64 embedded -->
+  <source src="data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABAAZGF0YQAAAAA/////wAAAAAA/////wAAAP///wAAAP///wAAAP///wAAAP///wAAAP///wAAAP///wAAAP///wAA" type="audio/wav">
+</audio>
+
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  /* ============================
+     CONFIG & STATE
+     ============================ */
+  const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbym7870t9FYTGPZqgXjxzS2WdL4ye4uqfudkpfVQHAAJUUKn6DPt6RQRCIvlyHfJmSk/exec";
+
+  const CHAPTERS = [
+    "Subtraction from 100 / 1000 / 10000",
+    "Multiplication with a Series of 9s",
+    "Remainder on Division by 9",
+    "Division by 9 (quotient or remainder separated)",
+    "Multiplication by 11",
+    "Remainder on Division by 11",
+    "Multiplication by 111",
+    "Both Integers Less Than the Base (e.g., 93×98)",
+    "Both Integers Above the Base (e.g., 103×106)",
+    "One Number Below, the Other Above the Base (e.g., 97×104)",
+    "Urdhva–Tiryak 2-digit × 2-digit",
+    "Urdhva–Tiryak 3-digit × 3-digit (digits < 5)"
+  ];
+
+  // DOM refs
+  const studentNameEl = document.getElementById('studentName');
+  const demoPracticeBtn = document.getElementById('demoPracticeBtn');
+  const fullTestBtn = document.getElementById('fullTestBtn');
+  const settingsBtn = document.getElementById('settingsBtn');
+  const demoCard = document.getElementById('demoCard');
+  const demoHeading = document.getElementById('demoHeading');
+  const demoMeta = document.getElementById('demoMeta');
+  const demoQbox = document.getElementById('demoQbox');
+  const demoIndex = document.getElementById('demoIndex');
+  const demoTotal = document.getElementById('demoTotal');
+  const demoTimerEl = document.getElementById('demoTimer');
+  const demoSubmitBtn = document.getElementById('demoSubmitBtn');
+  const demoNextBtn = document.getElementById('demoNextBtn');
+  const demoFinishBtn = document.getElementById('demoFinishBtn');
+  const demoSummaryCard = document.getElementById('demoSummaryCard');
+  const demoSummaryList = document.getElementById('demoSummaryList');
+  const demoSummaryMeta = document.getElementById('demoSummaryMeta');
+  const demoRetakeBtn = document.getElementById('demoRetakeBtn');
+  const demoBackToStartBtn = document.getElementById('demoBackToStartBtn');
+
+  const fullCard = document.getElementById('fullCard');
+  const fullQbox = document.getElementById('fullQbox');
+  const fullIndex = document.getElementById('fullIndex');
+  const fullTotal = document.getElementById('fullTotal');
+  const fullSubmitBtn = document.getElementById('fullSubmitBtn');
+  const fullQuitBtn = document.getElementById('fullQuitBtn');
+  const fullTimerTop = document.getElementById('fullTimerTop');
+  const fullSummaryCard = document.getElementById('fullSummaryCard');
+  const fullSummaryList = document.getElementById('fullSummaryList');
+  const fullSummaryMeta = document.getElementById('fullSummaryMeta');
+  const fullBackToStartBtn = document.getElementById('fullBackToStartBtn');
+
+  const settingsCard = document.getElementById('settingsCard');
+  const setDemoCount = document.getElementById('setDemoCount');
+  const setDemoTime = document.getElementById('setDemoTime');
+  const saveSettingsBtn = document.getElementById('saveSettingsBtn');
+  const closeSettingsBtn = document.getElementById('closeSettingsBtn');
+
+  // modal refs
+  const demoModal = document.getElementById('demoModal');
+  const modalBackdrop = document.getElementById('modalBackdrop');
+  const modalChapter = document.getElementById('modalChapter');
+  const modalCount = document.getElementById('modalCount');
+  const modalTime = document.getElementById('modalTime');
+  const modalStart = document.getElementById('modalStart');
+  const modalCancel = document.getElementById('modalCancel');
+
+  const bell = document.getElementById('bellAudio');
+
+  // default settings
+  let DEMO_DEFAULT_COUNT = 20;
+  let DEMO_DEFAULT_TIME = 30; // seconds
+  const FULL_FIXED_TIME = 30; // fixed for full test
+
+  // demo state
+  let demoQuestions = [];
+  let demoGiven = [];
+  let demoCurrent = 0;
+  let demoTimeLeft = 0;
+  let demoTimer = null;
+  let demoBellPlayed = false;
+
+  // full state
+  let fullQuestions = [];
+  let fullGiven = [];
+  let fullCurrent = 0;
+  let fullTimeLeft = 0;
+  let fullTimer = null;
+  let fullBellPlayed = false;
+
+  // helper: seeded RNG (mulberry32)
+  function mulberry32(a){ return function(){ let t = a += 0x6D2B79F5; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+  function shuffleArray(arr, rndFn){ for(let i=arr.length-1;i>0;i--){ const j=Math.floor(rndFn()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]]; } }
+
+  function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m])); }
+  function toNum(v){ if(v===null||v===undefined) return NaN; const s=String(v).trim(); if(s===''||s==='(no answer)') return NaN; const n=Number(s); return Number.isFinite(n)?n:NaN; }
+
+  /* ---------- question generation functions (numeric answers only) ---------- */
+  function genOneQuestion(chapterIndex, rnd){
+    const rInt = (a,b)=>Math.floor(rnd()*(b-a+1))+a;
+    let q="", ans=0;
+    switch(chapterIndex){
+      case 0:{
+        const bases=[100,1000,10000];
+        const base=bases[rInt(0,bases.length-1)];
+        const n=rInt(1, base-1);
+        q = `${base} − ${n}`; ans = base - n;
+      } break;
+      case 1:{
+        const series=[9,99,999];
+        const s = series[rInt(0,series.length-1)];
+        const n = rInt(2, Math.min(9999, Math.floor(s*8/2)));
+        q = `${n} × ${s}`; ans = n*s;
+      } break;
+      case 2:{
+        const n = rInt(1,99999);
+        q = `Remainder when ${n} divided by 9`; ans = n % 9;
+      } break;
+      case 3:{
+        const qv = rInt(1,1500);
+        const rv = rInt(0,8);
+        const num = qv*9 + rv;
+        if(rInt(0,1)===0){ q = `Quotient when ${num} divided by 9`; ans = qv; }
+        else { q = `Remainder when ${num} divided by 9`; ans = rv; }
+      } break;
+      case 4:{
+        const n=rInt(10,9999); q = `${n} × 11`; ans = n*11;
+      } break;
+      case 5:{
+        const digits = rInt(0,1)===0?4:6; let s=''; for(let i=0;i<digits;i++) s+=String(rInt(0,9)); if(s[0]==='0') s = String(rInt(1,9)) + s.slice(1); const n=parseInt(s,10);
+        q = `Remainder when ${n} divided by 11`; ans = n % 11;
+      } break;
+      case 6:{
+        const n=rInt(2,9999); q = `${n} × 111`; ans = n*111;
+      } break;
+      case 7:{
+        const a=rInt(80,99), b=rInt(80,99); q = `${a} × ${b}`; ans = a*b;
+      } break;
+      case 8:{
+        const a=100 + rInt(1,60), b = 100 + rInt(1,60); q = `${a} × ${b}`; ans = a*b;
+      } break;
+      case 9:{
+        const below = 100 - rInt(1,30), above = 100 + rInt(1,30); q = `${below} × ${above}`; ans = below * above;
+      } break;
+      case 10:{
+        const a = rInt(12,98), b = rInt(12,98); q = `${a} × ${b}`; ans = a*b;
+      } break;
+      case 11:{
+        const dg = ()=> rInt(1,4); const a = dg()*100 + dg()*10 + dg(); const b = dg()*100 + dg()*10 + dg(); q=`${a} × ${b}`; ans = a*b;
+      } break;
+      default: q="0"; ans=0;
+    }
+    return {q: q, ans: ans, cat: CHAPTERS[chapterIndex]};
+  }
+
+  function genQuestionsForChapter(chIndex, count, seed){
+    const rnd = mulberry32(seed || (Date.now() ^ (chIndex*997)));
+    const arr = [];
+    for(let i=0;i<count;i++) arr.push(genOneQuestion(chIndex, rnd));
+    return arr;
+  }
+
+  function generateFull(seed){
+    const rnd = mulberry32(seed || Date.now());
+    const all = [];
+    for(let c=0;c<CHAPTERS.length;c++){
+      const sseed = Math.floor(rnd()*1e9) ^ (c+1);
+      const part = genQuestionsForChapter(c, 20, sseed);
+      all.push(...part);
+    }
+    const rnd2 = mulberry32(seed || Date.now()+12345);
+    shuffleArray(all, rnd2);
+    return all;
+  }
+
+  /* populate modal chapter select */
+  (function populateModal(){
+    CHAPTERS.forEach((c,i)=>{
+      const opt = document.createElement('option');
+      opt.value = i; opt.textContent = `${i+1}. ${c}`; modalChapter.appendChild(opt);
+    });
+  })();
+
+  /* ---------- modal controls ---------- */
+  demoPracticeBtn.addEventListener('click', () => {
+    const name = (studentNameEl.value || "").trim();
+    if(!name){ alert('Enter your name'); studentNameEl.focus(); return; }
+    // show modal instantly
+    document.getElementById('demoModal').style.display = 'block';
+    // set defaults
+    modalCount.value = DEMO_DEFAULT_COUNT;
+    modalTime.value = DEMO_DEFAULT_TIME;
+  });
+
+  modalCancel.addEventListener('click', () => {
+    document.getElementById('demoModal').style.display = 'none';
+  });
+
+  modalStart.addEventListener('click', () => {
+    const chapter = Number(modalChapter.value || 0);
+    const count = Math.max(5, Math.min(20, Number(modalCount.value || DEMO_DEFAULT_COUNT)));
+    const timePer = Math.max(5, Math.min(600, Number(modalTime.value || DEMO_DEFAULT_TIME)));
+    document.getElementById('demoModal').style.display = 'none';
+    startDemo(chapter, count, timePer);
+  });
+
+  /* settings */
+  settingsBtn.addEventListener('click', ()=> {
+    document.getElementById('startCard').style.display = 'none';
+    settingsCard.style.display = 'block';
+    setDemoCount.value = DEMO_DEFAULT_COUNT;
+    setDemoTime.value = DEMO_DEFAULT_TIME;
+  });
+  closeSettingsBtn.addEventListener('click', ()=>{
+    settingsCard.style.display = 'none';
+    document.getElementById('startCard').style.display = 'block';
+  });
+  saveSettingsBtn.addEventListener('click', (e)=>{
+    e.preventDefault();
+    DEMO_DEFAULT_COUNT = Math.max(5, Math.min(20, Number(setDemoCount.value || DEMO_DEFAULT_COUNT)));
+    DEMO_DEFAULT_TIME = Math.max(5, Math.min(600, Number(setDemoTime.value || DEMO_DEFAULT_TIME)));
+    alert('Settings saved.');
+    settingsCard.style.display = 'none';
+    document.getElementById('startCard').style.display = 'block';
+  });
+
+  /* ---------- Demo runner ---------- */
+  function startDemo(chapterIndex, count, timePer){
+    // prepare
+    demoQuestions = genQuestionsForChapter(chapterIndex, count, Date.now() ^ (chapterIndex+11));
+    demoGiven = new Array(demoQuestions.length).fill(null);
+    demoCurrent = 0;
+    demoHeading.textContent = `Demo — Chapter ${chapterIndex+1}: ${CHAPTERS[chapterIndex]}`;
+    demoMeta.textContent = `Student: ${escapeHtml(studentNameEl.value || '')} • Questions: ${demoQuestions.length} • Time/q: ${timePer}s`;
+    demoTotal.textContent = String(demoQuestions.length);
+    // store time per question on the demoCard element
+    demoCard.dataset.timePer = String(timePer);
+    // show demo UI
+    document.getElementById('startCard').style.display = 'none';
+    settingsCard.style.display = 'none';
+    demoSummaryCard.style.display = 'none';
+    demoCard.style.display = 'block';
+    // start first question
+    startDemoQuestion();
+  }
+
+  function startDemoQuestion(){
+    demoBellPlayed = false;
+    const item = demoQuestions[demoCurrent];
+    demoIndex.textContent = String(demoCurrent + 1);
+    demoQbox.innerHTML = `<div class="qtext">${escapeHtml(item.q)}</div>
+      <div><input id="demoAnswer" type="number" placeholder="Enter numeric answer" /></div>
+      <div class="small" style="margin-top:8px;color:var(--muted)">Numeric answers only. Bell rings 5s before end.</div>`;
+    setTimeout(()=>{ const a = document.getElementById('demoAnswer'); if(a) a.focus(); },50);
+    demoTimeLeft = Number(demoCard.dataset.timePer) || DEMO_DEFAULT_TIME;
+    updateDemoTimer();
+    if(demoTimer) clearInterval(demoTimer);
+    demoTimer = setInterval(()=>{
+      demoTimeLeft--;
+      updateDemoTimer();
+      if(demoTimeLeft === 5 && !demoBellPlayed){ playBell(); demoBellPlayed = true; }
+      if(demoTimeLeft <= 0){
+        clearInterval(demoTimer);
+        autoDemoRecordAndNext();
+      }
+    },1000);
+  }
+
+  function updateDemoTimer(){ demoTimerEl.textContent = String(demoTimeLeft).padStart(2,'0'); }
+
+  function autoDemoRecordAndNext(){
+    demoGiven[demoCurrent] = '(no answer)';
+    demoNext();
+  }
+
+  function demoRecordAnswerAndNext(){
+    const val = document.getElementById('demoAnswer') ? document.getElementById('demoAnswer').value : '';
+    const n = toNum(val);
+    demoGiven[demoCurrent] = Number.isFinite(n) ? Number(n) : '(no answer)';
+    demoNext();
+  }
+
+  function demoNext(){
+    demoCurrent++;
+    if(demoCurrent >= demoQuestions.length) showDemoSummary();
+    else startDemoQuestion();
+  }
+
+  demoSubmitBtn.addEventListener('click', ()=>{
+    if(demoTimer) clearInterval(demoTimer);
+    demoRecordAnswerAndNext();
+  });
+  demoNextBtn.addEventListener('click', ()=>{
+    if(demoTimer) clearInterval(demoTimer);
+    demoGiven[demoCurrent] = '(no answer)';
+    demoNext();
+  });
+  demoFinishBtn.addEventListener('click', ()=>{
+    if(confirm('Finish demo early and view results?')){
+      if(demoTimer) clearInterval(demoTimer);
+      for(let i=0;i<demoGiven.length;i++) if(demoGiven[i]===null) demoGiven[i] = '(no answer)';
+      showDemoSummary();
+    }
+  });
+
+  function showDemoSummary(){
+    if(demoTimer) clearInterval(demoTimer);
+    demoCard.style.display = 'none';
+    demoSummaryCard.style.display = 'block';
+    demoSummaryList.innerHTML = '';
+    let score = 0;
+    demoSummaryMeta.textContent = `Student: ${escapeHtml(studentNameEl.value || '')} • ${demoQuestions.length} Qs`;
+    demoQuestions.forEach((it, idx)=>{
+      const given = demoGiven[idx] === null ? '(no answer)' : demoGiven[idx];
+      const corr = Number(it.ans);
+      const ok = (Number.isFinite(given) && Number(given) === corr);
+      if(ok) score++;
+      const div = document.createElement('div');
+      div.className = 'q-row ' + (ok ? 'correct':'wrong');
+      div.innerHTML = `<h3>Q${idx+1}: ${escapeHtml(it.q)}</h3>
+        <div class="small">Your: ${escapeHtml(String(given))} — Correct: ${escapeHtml(String(corr))} ${ok ? '<span style="color:var(--ok)">(Correct)</span>' : '<span style="color:var(--danger)">(Wrong)</span>'}</div>`;
+      demoSummaryList.appendChild(div);
+    });
+    // send results to Google Sheet
+    try{
+      const details = demoQuestions.map((it, i)=>({
+        index: i+1, chapter: it.cat, q: it.q, given: demoGiven[i], correct: it.ans, correctBool: (Number.isFinite(demoGiven[i]) && Number(demoGiven[i]) === Number(it.ans))
+      }));
+      fetch(GOOGLE_SCRIPT_URL, {
+        method: 'POST',
+        body: new URLSearchParams({
+          name: studentNameEl.value || '',
+          mode: 'Demo',
+          chapter: demoQuestions[0] ? demoQuestions[0].cat : '',
+          score: String(score),
+          total: String(demoQuestions.length),
+          answers: JSON.stringify(details),
+          timestamp: new Date().toISOString()
+        })
+      }).then(()=>console.log('Demo result sent')).catch(e=>console.warn('Demo post error', e));
+    }catch(e){ console.warn(e); }
+  }
+
+  demoRetakeBtn.addEventListener('click', ()=>{
+    demoSummaryCard.style.display = 'none';
+    document.getElementById('startCard').style.display = 'block';
+  });
+  demoBackToStartBtn.addEventListener('click', ()=>{
+    demoSummaryCard.style.display = 'none';
+    document.getElementById('startCard').style.display = 'block';
+  });
+
+  /* ========== FULL TEST ========== */
+  fullTestBtn.addEventListener('click', ()=>{
+    const name = (studentNameEl.value || '').trim();
+    if(!name){ alert('Enter your name'); studentNameEl.focus(); return; }
+    document.getElementById('startCard').style.display = 'none';
+    startFullTest();
+  });
+
+  function startFullTest(){
+    const seed = Date.now();
+    fullQuestions = generateFull(seed);
+    fullGiven = new Array(fullQuestions.length).fill(null);
+    fullCurrent = 0;
+    fullTotal.textContent = String(fullQuestions.length);
+    fullIndex.textContent = '1';
+    fullCard.style.display = 'block';
+    fullSummaryCard.style.display = 'none';
+    fullHeading = document.getElementById('fullHeading');
+    fullHeading.textContent = 'Full-Length Timed Test — Good luck!';
+    startFullQuestion();
+  }
+
+  function startFullQuestion(){
+    fullBellPlayed = false;
+    const item = fullQuestions[fullCurrent];
+    fullIndex.textContent = String(fullCurrent + 1);
+    fullQbox.innerHTML = `<div class="qtext">${escapeHtml(item.q)}</div>
+      <div><input id="fullAnswer" type="number" placeholder="Enter numeric answer" /></div>
+      <div class="small" style="margin-top:8px;color:var(--muted)">Fixed 30s per question. Bell rings 5s before end.</div>`;
+    setTimeout(()=>{ const a=document.getElementById('fullAnswer'); if(a) a.focus(); },50);
+    fullTimeLeft = FULL_FIXED_TIME;
+    updateFullTimer();
+    if(fullTimer) clearInterval(fullTimer);
+    fullTimer = setInterval(()=>{
+      fullTimeLeft--;
+      updateFullTimer();
+      if(fullTimeLeft === 5 && !fullBellPlayed){ playBell(); fullBellPlayed = true; }
+      if(fullTimeLeft <= 0){
+        clearInterval(fullTimer);
+        autoFullRecordAndNext();
+      }
+    },1000);
+  }
+
+  function updateFullTimer(){ fullTimerTop.textContent = `${String(fullTimeLeft).padStart(2,'0')}:${String(0).padStart(2,'0')}`; }
+
+  function autoFullRecordAndNext(){
+    fullGiven[fullCurrent] = '(no answer)';
+    fullNext();
+  }
+
+  fullSubmitBtn.addEventListener('click', ()=>{
+    if(fullTimer) clearInterval(fullTimer);
+    const val = document.getElementById('fullAnswer') ? document.getElementById('fullAnswer').value : '';
+    const n = toNum(val);
+    fullGiven[fullCurrent] = Number.isFinite(n) ? Number(n) : '(no answer)';
+    fullNext();
+  });
+
+  function fullNext(){
+    fullCurrent++;
+    if(fullCurrent >= fullQuestions.length){ finishFullTest(); }
+    else startFullQuestion();
+  }
+
+  fullQuitBtn.addEventListener('click', ()=>{
+    if(confirm('Submit and end test now?')){
+      if(fullTimer) clearInterval(fullTimer);
+      for(let i=0;i<fullGiven.length;i++) if(fullGiven[i]===null) fullGiven[i]='(no answer)';
+      finishFullTest();
+    }
+  });
+
+  function finishFullTest(){
+    if(fullTimer) clearInterval(fullTimer);
+    fullCard.style.display = 'none';
+    fullSummaryCard.style.display = 'block';
+    fullSummaryList.innerHTML = '';
+    let score = 0;
+    fullQuestions.forEach((it, idx)=>{
+      const given = fullGiven[idx] === null ? '(no answer)' : fullGiven[idx];
+      const corr = Number(it.ans);
+      const ok = (Number.isFinite(given) && Number(given) === corr);
+      if(ok) score++;
+      const div = document.createElement('div');
+      div.className = 'q-row ' + (ok ? 'correct':'wrong');
+      div.innerHTML = `<h3>Q${idx+1}: ${escapeHtml(it.q)}</h3>
+        <div class="small">Your: ${escapeHtml(String(given))} — Correct: ${escapeHtml(String(corr))} ${ok ? '<span style="color:var(--ok)">(Correct)</span>' : '<span style="color:var(--danger)">(Wrong)</span>'}</div>`;
+      fullSummaryList.appendChild(div);
+    });
+    fullSummaryMeta.textContent = `Student: ${escapeHtml(studentNameEl.value||'')} • Score: ${score} / ${fullQuestions.length}`;
+    // send to Google Script
+    try{
+      const details = fullQuestions.map((it, i)=>({
+        index: i+1, chapter: it.cat, q: it.q, given: fullGiven[i], correct: it.ans, correctBool: (Number.isFinite(fullGiven[i]) && Number(fullGiven[i]) === Number(it.ans))
+      }));
+      fetch(GOOGLE_SCRIPT_URL, {
+        method: 'POST',
+        body: new URLSearchParams({
+          name: studentNameEl.value||'',
+          mode: 'Full',
+          chapter: '',
+          score: String(score),
+          total: String(fullQuestions.length),
+          answers: JSON.stringify(details),
+          timestamp: new Date().toISOString()
+        })
+      }).then(()=>console.log('Full result sent')).catch(e=>console.warn('Full post error', e));
+    }catch(e){ console.warn(e); }
+  }
+
+  fullBackToStartBtn.addEventListener('click', ()=>{
+    fullSummaryCard.style.display = 'none';
+    document.getElementById('startCard').style.display = 'block';
+  });
+
+  /* bell playback */
+  function playBell(){
+    try{ bell.currentTime = 0; bell.volume = 0.5; bell.play().catch(()=>{}); }catch(e){}
+  }
+
+  /* Prevent Enter from submitting the form accidentally (except inside numeric inputs handled) */
+  window.addEventListener('keydown', (e)=>{
+    if(e.key === 'Enter' && (!document.activeElement || document.activeElement.tagName !== 'INPUT')){
+      e.preventDefault();
+    }
+  });
+
+  // initial focus
+  setTimeout(()=>{ studentNameEl.focus(); },200);
+});
+</script>
+</body>
+</html>
