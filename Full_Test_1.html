@@ -1,1 +1,326 @@
-abc
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>RRB Section Control — Full-Length Test (50 Qs)</title>
+<style>
+  :root{--brand:#2563eb;--danger:#b91c1c;--muted:#6b7280}
+  body{font-family:system-ui,-apple-system,'Segoe UI',Roboto,Arial; background:#f8fafc; margin:0}
+  .wrap{max-width:1100px;margin:18px auto;padding:18px}
+  .card{background:#fff;border-radius:10px;padding:18px;box-shadow:0 6px 18px rgba(2,6,23,0.06)}
+  header{display:flex;justify-content:space-between;align-items:center;gap:12px}
+  h1{font-size:20px;margin:0}
+  #timer{font-weight:700;color:var(--danger);font-size:16px}
+  .intro ul{margin-top:6px}
+  input[type="text"]{width:100%;padding:8px;border-radius:6px;border:1px solid #e5e7eb}
+  .controls{display:flex;gap:8px;align-items:center;margin-top:12px}
+  button{background:var(--brand);color:#fff;padding:9px 12px;border-radius:8px;border:none;cursor:pointer}
+  button.secondary{background:#64748b}
+  .qbox{margin-top:14px}
+  .qtext{font-weight:600;margin-bottom:10px}
+  .opts{display:block;margin-bottom:6px}
+  label.opt{display:block;padding:10px;border-radius:8px;border:1px solid #e6e6e6;margin-bottom:8px;cursor:pointer;background:#fff}
+  label.opt input{margin-right:8px}
+  .nav-numbers{display:flex;flex-wrap:wrap;gap:6px;padding:10px 0}
+  .nav-numbers button{width:40px;height:36px;border-radius:6px;padding:0}
+  .nav-numbers button.current{background:#60a5fa}
+  .result{margin-top:12px}
+  .summary{margin-top:12px;max-height:320px;overflow:auto;padding:8px;border-radius:8px;border:1px solid #e6e6e6}
+  .footer{margin-top:14px;color:var(--muted);font-size:13px}
+</style>
+</head>
+<body>
+<form id="quizForm">
+<div class="wrap">
+  <!-- START CARD -->
+  <div class="card" id="startCard">
+    <header>
+      <div>
+        <h1>RRB Section Control — Full-Length Test 6</h1>
+        <div style="color:var(--muted);margin-top:6px">50 Questions | Time:30 minutes | Each question = 1 mark</div>
+      </div>
+      <div style="text-align:right">
+        <div id="timer" style="display:none">30:00</div>
+        <div style="font-size:12px;color:var(--muted)">Time Remaining</div>
+      </div>
+    </header>
+
+    <div class="intro" style="margin-top:14px">
+      <p><strong>Instructions:</strong></p>
+      <ul>
+        <li>Enter your name and press <strong>Start Exam</strong>. The exam will go full-screen and the 30-minute timer will begin.</li>
+        <li>Do not exit full-screen or switch tabs — doing so will auto-submit your exam.</li>
+        <li>You may navigate using the numbered buttons, and submit when done. The timer will auto-submit when time ends.</li>
+      </ul>
+
+      <p><label>Student name (required)</label>
+      <input type="text" id="studentName" placeholder="Enter your full name" /></p>
+
+      <div class="controls">
+        <button id="startBtn">Start Exam</button>
+        <button class="secondary" id="demoBtn">Demo (No Fullscreen)</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- QUIZ CARD -->
+  <div class="card" id="quizCard" style="display:none;margin-top:14px">
+    <header style="align-items:flex-start">
+      <div>
+        <h2 id="qHeading">Question 1</h2>
+        <div style="color:var(--muted)" id="qCategory"></div>
+      </div>
+      <div style="text-align:right">
+        <div id="timerTop" style="font-weight:700;color:var(--danger);font-size:18px">30:00</div>
+        <div style="font-size:12px;color:var(--muted)">Time Remaining</div>
+      </div>
+    </header>
+
+    <div class="qbox" id="qbox"></div>
+    <div class="nav-numbers" id="navNumbers"></div>
+
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px">
+      <div>
+        <button id="prevBtn" class="secondary" type="button">◀ Prev</button>
+        <button id="nextBtn" type="button">Next ▶</button>
+      </div>
+      <div>
+        <button id="submitBtn" style="background:#16a34a" type="button">Submit Exam</button>
+      </div>
+    </div>
+
+    <div class="footer">You must remain in full-screen mode. Switching tabs or exiting full-screen will auto-submit.</div>
+  </div>
+
+  <!-- RESULT CARD -->
+  <div class="card" id="resultCard" style="display:none;margin-top:14px">
+    <h2>Exam Submitted</h2>
+    <div id="resultSummary" class="result"></div>
+    <div class="summary" id="detailSummary"></div>
+  </div>
+</div>
+</form>
+
+<script>
+// ---------------- QUIZ LOGIC ----------------
+const quiz = [
+  
+{cat:"Number System", q:"The remainder when 7^1001 is divided by 100 is?", opts:["1","43","49","51"], ans:"49", marks:1, time:"3 min"},
+{cat:"Decimals", q:"Find the number of decimal places in (0.2)^5 × (0.5)^4.", opts:["7","8","9","10"], ans:"9", marks:1, time:"3 min"},
+{cat:"Fractions", q:"Simplify: (7/8 ÷ 21/32) × (9/14 ÷ 27/16).", opts:["1/2","2/3","4/9","8/9"], ans:"1/2", marks:1, time:"4 min"},
+{cat:"LCM and HCF", q:"If LCM of two numbers is 360 and HCF is 12, and one number is 24, find the other.", opts:["120","180","150","160"], ans:"180", marks:1, time:"3 min"},
+{cat:"Ratio and Proportion", q:"A:B = 2:3 and B:C = 4:5, find A:C.", opts:["8:15","3:5","5:8","4:7"], ans:"8:15", marks:1, time:"2 min"},
+{cat:"Percentage", q:"If a number is successively increased by 10% and 20%, find the net percentage increase.", opts:["30%","32%","33%","34%"], ans:"32%", marks:1, time:"3 min"},
+{cat:"Mensuration", q:"Find the volume of a hemisphere of radius 3 cm.", opts:["36π cm³","18π cm³","27π cm³","54π cm³"], ans:"18π cm³", marks:1, time:"3 min"},
+{cat:"Time and Work", q:"A and B can complete a work in 12 and 15 days respectively. After working together for 4 days, A leaves. In how many more days will B finish the remaining work?", opts:["7","8","9","10"], ans:"8", marks:1, time:"4 min"},
+{cat:"Time and Distance", q:"A train 300 m long crosses a pole in 15 sec and a platform in 25 sec. Find the platform length.", opts:["200 m","250 m","300 m","350 m"], ans:"200 m", marks:1, time:"3 min"},
+{cat:"Simple Interest", q:"At what rate of interest will ₹1600 amount to ₹1936 in 2 years?", opts:["10%","12%","8%","9%"], ans:"10%", marks:1, time:"2 min"},
+{cat:"Compound Interest", q:"The compound interest on ₹10,000 for 2 years at 10% p.a. compounded annually is?", opts:["₹2000","₹2100","₹2200","₹2300"], ans:"₹2100", marks:1, time:"3 min"},
+{cat:"Profit and Loss", q:"A trader marks an item 40% above cost price and gives 10% discount. Find the profit percent.", opts:["26%","28%","30%","32%"], ans:"26%", marks:1, time:"2 min"},
+{cat:"Algebra", q:"If x + 1/x = 4, find x³ + 1/x³.", opts:["52","60","64","70"], ans:"52", marks:1, time:"3 min"},
+{cat:"Algebra", q:"Solve for x: x² - 5x + 6 = 0.", opts:["2 or 3","3 or 4","1 or 6","2 or 6"], ans:"2 or 3", marks:1, time:"2 min"},
+{cat:"Geometry", q:"Find the area of an equilateral triangle with side 12 cm.", opts:["36√3","48√3","72√3","64√3"], ans:"36√3", marks:1, time:"3 min"},
+{cat:"Trigonometry", q:"If sin θ + cos θ = √2, find tan θ.", opts:["1","0","√3","1/√3"], ans:"1", marks:1, time:"3 min"},
+{cat:"Trigonometry", q:"If tan A = 3/4, find (sin A + cos A).", opts:["7/5","1","24/25","43/25"], ans:"7/5", marks:1, time:"3 min"},
+{cat:"Statistics", q:"The mean of 6 numbers is 14. If one number is added, the new mean becomes 15. Find the added number.", opts:["20","21","22","23"], ans:"21", marks:1, time:"3 min"},
+{cat:"Probability", q:"A die is thrown twice. What is the probability that the sum is at least 10?", opts:["1/6","1/12","1/4","5/36"], ans:"1/6", marks:1, time:"3 min"},
+{cat:"Geometry", q:"The internal angles of a regular polygon are 150°. Find the number of sides.", opts:["10","12","15","8"], ans:"12", marks:1, time:"3 min"},
+{cat:"Mensuration", q:"The curved surface area of a right circular cylinder is 4400 cm² and its height is 25 cm. Find its radius.", opts:["28 cm","30 cm","35 cm","32 cm"], ans:"28 cm", marks:1, time:"4 min"},
+{cat:"Ratio", q:"A sum of ₹12,000 is divided among A, B, and C so that A gets 2/3 of B and B gets half of C. Find C’s share.", opts:["6000","7200","8000","9000"], ans:"7200", marks:1, time:"4 min"},
+{cat:"Time and Distance", q:"A train moves at 60 km/h. How much time does it take to cross a 1.5 km bridge if its length is 500 m?", opts:["2 min","1.5 min","1.2 min","1 min"], ans:"2 min", marks:1, time:"3 min"},
+{cat:"Simple Interest", q:"At simple interest, a sum becomes double in 10 years. In how many years will it become triple?", opts:["20","25","15","30"], ans:"20", marks:1, time:"3 min"},
+{cat:"Compound Interest", q:"Find CI on ₹12,000 at 10% p.a. compounded semi-annually for 1 year.", opts:["₹1200","₹1210","₹1220","₹1230"], ans:"₹1210", marks:1, time:"3 min"},
+{cat:"Mensuration", q:"A cone has base radius 7 cm and height 24 cm. Find its slant height.", opts:["25","26","27","28"], ans:"25", marks:1, time:"2 min"},
+{cat:"Trigonometry", q:"If sin θ = 3/5, find sec θ.", opts:["5/3","4/3","5/4","3/4"], ans:"5/4", marks:1, time:"2 min"},
+{cat:"Algebra", q:"If a+b=10 and ab=21, find a³+b³.", opts:["973","946","970","952"], ans:"946", marks:1, time:"3 min"},
+{cat:"Statistics", q:"If the median of data 6, 8, 10, x, 14, 16, 18 is 13, find x.", opts:["12","13","14","15"], ans:"14", marks:1, time:"3 min"},
+{cat:"Percentage", q:"If population increases by 5% annually, what will be the population after 3 years of a city with 20000 people?", opts:["23100","22000","21525","23000"], ans:"23100", marks:1, time:"3 min"},
+{cat:"HCF & LCM", q:"Find HCF and LCM of 72 and 108. Choose LCM.", opts:["216","324","288","144"], ans:"216", marks:1, time:"3 min"},
+{cat:"Number System", q:"Find the smallest 5-digit number divisible by 12, 15, and 18.", opts:["10800","10080","10350","10125"], ans:"10080", marks:1, time:"3 min"},
+{cat:"Geometry", q:"In a triangle, sides are in ratio 3:4:5 and perimeter is 36 cm. Find the area.", opts:["54 cm²","48 cm²","60 cm²","72 cm²"], ans:"54 cm²", marks:1, time:"3 min"},
+{cat:"Syllogism", q:"Statements: All X are Y. Some Y are Z. Conclusions: I. Some Z are X. II. Some X are Z. Which conclusions follow?", opts:["Only I follows","Only II follows","Both follow","Neither follows"], ans:"Neither follows", marks:1, time:"4 min"},
+{cat:"Series Completion", q:"Find the next number in series: 7, 13, 25, 49, 97, ?", opts:["193","191","195","189"], ans:"193", marks:1, time:"4 min"},
+{cat:"Coding-Decoding", q:"If 'SMART' is coded as 'URBWV', how is 'TRAIN' coded?", opts:["VUDLQ","VUDLQ","VUDSQ","VWFLO"], ans:"VUDLQ", marks:1, time:"4 min"},
+{cat:"Blood Relation", q:"A says to B: 'C is the only son of my mother's brother.' How is B related to C if B is A's sister?", opts:["Aunt","Brother","Sister","Cannot be determined"], ans:"Sister", marks:1, time:"3 min"},
+{cat:"Seating Arrangement", q:"Five persons A,B,C,D,E sit in a row. A sits to immediate left of B. C sits right end. D sits two places left of E. Who sits in middle?", opts:["A","B","C","D"], ans:"B", marks:1, time:"4 min"},
+{cat:"Puzzle", q:"A box contains 4 red, 4 blue, 4 green and 4 yellow balls. Minimum balls to draw to ensure at least 3 of one colour?", opts:["10","9","11","12"], ans:"10", marks:1, time:"4 min"},
+{cat:"Venn Diagram", q:"In a class 40 study Physics, 50 study Chemistry, 30 study Biology. 15 study both Physics & Chemistry, 10 Chemistry & Biology, 8 Physics & Biology, 5 all three. How many students study none if total 100?", opts:["12","10","8","7"], ans:"12", marks:1, time:"5 min"},
+{cat:"Data Sufficiency", q:"Is x>y? (1) x²>y². (2) x+y>0. Choose:", opts:["(1) alone sufficient","(2) alone sufficient","Either sufficient","Need both"], ans:"(1) alone sufficient", marks:1, time:"4 min"},
+{cat:"Logical Sequence", q:"Arrange: (P) Investigate, (Q) Report, (R) Observe, (S) Collect data, (T) Conclude. Proper order?", opts:["R-S-P-Q-T","S-R-P-Q-T","R-S-Q-P-T","S-R-Q-P-T"], ans:"R-S-P-Q-T", marks:1, time:"4 min"},
+{cat:"Analogy", q:"Glove : Hand :: Sock : ?", opts:["Foot","Shoe","Toe","Leg"], ans:"Foot", marks:1, time:"2 min"},
+{cat:"Coding (Position)", q:"In a code, each letter is replaced by the letter 3 places to its right. The code for 'BAD' will be?", opts:["EDG","EDC","EAG","EDB"], ans:"EDG", marks:1, time:"3 min"},
+{cat:"Number Puzzle", q:"If 5⊕3=26 and 6⊕4=40, find 7⊕5 (pattern: a⊕b = a² + ab + b)", opts:["79","84","84","85"], ans:"84", marks:1, time:"4 min"},
+{cat:"Direction Test", q:"You face south. Turn 135° anti-clockwise then 270° clockwise. Where do you face now?", opts:["North-West","East","South-East","North-East"], ans:"North-West", marks:1, time:"3 min"},
+{cat:"Statement – Conclusion", q:"Statement: 'All vehicles are expensive.' Conclusion I: 'All expensive things are vehicles.' Conclusion II: 'Some expensive things may not be vehicles.' Which?", opts:["Only I follows","Only II follows","Both follow","Neither follows"], ans:"Only II follows", marks:1, time:"4 min"},
+{cat:"Input-Output", q:"Input: 23 47 86 14 59. Operation: rearrange ascending then replace each by difference with previous (first remains). Output sequence's third number?", opts:["24","23","22","21"], ans:"22", marks:1, time:"4 min"},
+{cat:"Clock", q:"At what angle are the hour and minute hands at 4:40?", opts:["120°","130°","140°","150°"], ans:"120°", marks:1, time:"4 min"},
+{cat:"Calendar", q:"If Jan 1, 2025 was Wednesday, what day is Oct 1, 2025?", opts:["Wednesday","Thursday","Friday","Saturday"], ans:"Wednesday", marks:1, time:"4 min"},
+{cat:"Mirror Image", q:"If mirror image of 'BD2' is shown, which reads as?", opts:["2DB","2BD","DB2","BD2"], ans:"2DB", marks:1, time:"2 min"},
+{cat:"Matrix Reasoning", q:"Find missing in matrix: row-wise product pattern: [2,3,4]=24, [1,5,6]=30, [?,2,7]=28. Missing first entry?", opts:["2","1","4","7"], ans:"2", marks:1, time:"4 min"},
+{cat:"Syllogism", q:"Statements: Some P are Q. Some Q are R. Conclusions: I. Some P are R. II. Some R are P. Which?", opts:["Only I follows","Only II follows","Both follow","Neither follows"], ans:"Neither follows", marks:1, time:"4 min"},
+{cat:"Puzzles (weighing)", q:"You have 8 identical-looking balls; one is heavier. Using a balance scale find minimum weighings to identify heavier ball.", opts:["2","3","4","1"], ans:"2", marks:1, time:"3 min"},
+{cat:"Coding-Decoding (reverse)", q:"If 'EAT'→'VZG' (each letter replaced by its 22nd predecessor), what is code for 'BOW'?", opts:["YLI","YLR","YLV","YLI"], ans:"YLI", marks:1, time:"4 min"},
+{cat:"Seating (circle)", q:"6 friends sit round table. A opposite D. B third to left of A. C is not neighbour of B. Who is to immediate right of D?", opts:["C","E","B","Cannot be determined"], ans:"E", marks:1, time:"5 min"},
+{cat:"Statement-Action", q:"Statement: 'Roads flooded due to heavy rain.' Action I: Arrange boats. Action II: Declare festival. Which action?", opts:["Only I","Only II","Both","Neither"], ans:"Only I", marks:1, time:"3 min"},
+{cat:"Direction & Distance", q:"From point, go 5 km North, then 12 km East, then 5 km South. How far from start?", opts:["12 km","13 km","10 km","5 km"], ans:"12 km", marks:1, time:"3 min"},
+{cat:"Logical Puzzle", q:"Three switches outside control three bulbs inside. You can enter room once. How to identify which switch controls which bulb?", opts:["Use off/on and heat method","Turn all off","Random guess","Impossible"], ans:"Use off/on and heat method", marks:1, time:"4 min"},
+{cat:"Odd One Out", q:"Pick odd one: PQR, QRS, RST, STU, TUV", opts:["PQR","QRS","RST","TUV"], ans:"TUV", marks:1, time:"2 min"},
+{cat:"Direction Sense", q:"A walks to point B 20m east, then to C 15m north, then to D 20m west. Which direction from A to D?", opts:["North","South","West","North-East"], ans:"North", marks:1, time:"3 min"},
+{cat:"Data Interpretation", q:"Table: A= {10,20,30}, B={5,15,25}. If we pair largest of A with smallest of B etc., sum of products? (30×5)+(20×15)+(10×25) = ?", opts:["950","900","850","1000"], ans:"950", marks:1, time:"4 min"},
+{cat:"Coding (binary logic)", q:"If 1=TRUE, 0=FALSE. For inputs A=1,B=0,C=1 evaluate (A AND B) OR (B XOR C). Result?", opts:["1","0","Depends","Error"], ans:"1", marks:1, time:"3 min"},
+{cat:"Puzzle (coins)", q:"You have 3 coins, one is double-headed. Pick a coin at random and toss it — you get heads. Probability that coin is double-headed?", opts:["1/2","2/3","1/3","3/4"], ans:"2/3", marks:1, time:"4 min"}
+{cat:"General Awareness", q:"The Indian Councils Act that introduced the portfolio system in the Government of India was passed in which year?", opts:["1861","1892","1909","1919"], ans:"1861", marks:1, time:"3 min"},
+{cat:"General Awareness", q:"Which Vedic period text is primarily associated with early development of iron metallurgy in India?", opts:["Rigveda","Yajurveda","Atharvaveda","Samaveda"], ans:"Atharvaveda", marks:1, time:"3 min"},
+{cat:"General Awareness", q:"The term 'Green Revolution' in India is most directly associated with which of the following crops?", opts:["Rice and Wheat","Cotton and Jute","Millets and Pulses","Tea and Coffee"], ans:"Rice and Wheat", marks:1, time:"3 min"},
+{cat:"General Awareness", q:"Which article of the Indian Constitution provides for the abolition of untouchability?", opts:["Article 15","Article 17","Article 21","Article 32"], ans:"Article 17", marks:1, time:"3 min"},
+{cat:"General Awareness", q:"The Himlayan brown bear (Ursus arctos isabellinus) is primarily found in which Indian state among the following?", opts:["Jammu & Kashmir","Kerala","Rajasthan","West Bengal"], ans:"Jammu & Kashmir", marks:1, time:"3 min"},
+{cat:"General Awareness", q:"Which tax was subsumed into the Goods and Services Tax (GST) in India on July 1, 2017?", opts:["Income Tax","Excise Duty on petroleum products","Customs Duty","Property Tax"], ans:"Excise Duty on petroleum products", marks:1, time:"4 min"},
+{cat:"General Awareness", q:"Which classical Indian dance is associated historically with temples of Odisha?", opts:["Bharatanatyam","Kathak","Odissi","Kuchipudi"], ans:"Odissi", marks:1, time:"2 min"},
+{cat:"General Awareness", q:"Which river forms the deepest gorge in India at the confluence with the Siang and Dibang rivers?", opts:["Brahmaputra","Ganges","Narmada","Godavari"], ans:"Brahmaputra", marks:1, time:"3 min"},
+{cat:"General Awareness", q:"The doctrine of 'Basic Structure' of the Indian Constitution was propounded by which Supreme Court judgment?", opts:["Kesavananda Bharati v. State of Kerala","Golaknath v. State of Punjab","Minerva Mills v. Union of India","S.R. Bommai v. Union of India"], ans:"Kesavananda Bharati v. State of Kerala", marks:1, time:"4 min"},
+{cat:"General Awareness", q:"Which instrument is used to measure atmospheric ozone concentration?", opts:["Hygrometer","Dobson spectrophotometer","Anemometer","Barometer"], ans:"Dobson spectrophotometer", marks:1, time:"3 min"},
+{cat:"General Awareness", q:"Who wrote the economic treatise 'Arthashastra' traditionally attributed to Kautilya/Chanakya?", opts:["Kautilya","Megasthenes","Kalidasa","Vatsyayana"], ans:"Kautilya", marks:1, time:"3 min"},
+{cat:"General Awareness", q:"Which of the following international organisations primarily manages global monetary cooperation and exchange rates?", opts:["World Bank","International Monetary Fund (IMF)","World Trade Organization","UNCTAD"], ans:"International Monetary Fund (IMF)", marks:1, time:"3 min"},
+{cat:"General Awareness", q:"Which plant is the botanical source of the drug 'Taxol' used in cancer treatment?", opts:["Periwinkle (Catharanthus)","Pacific yew (Taxus)","Foxglove (Digitalis)","Willow (Salix)"], ans:"Pacific yew (Taxus)", marks:1, time:"4 min"},
+{cat:"General Awareness", q:"The Chilka Lake is located on the coast of which Indian state?", opts:["Andhra Pradesh","Odisha","West Bengal","Tamil Nadu"], ans:"Odisha", marks:1, time:"2 min"},
+{cat:"General Awareness", q:"Which constitutional amendment introduced the Goods and Services Tax (GST) in India?", opts:["101st Amendment","42nd Amendment","44th Amendment","73rd Amendment"], ans:"101st Amendment", marks:1, time:"3 min"},
+{cat:"General Awareness", q:"Which battle (1526) marked the beginning of Mughal dominance in North India?", opts:["Battle of Panipat","Battle of Talikota","Battle of Khanwa","Battle of Plassey"], ans:"Battle of Panipat", marks:1, time:"3 min"},
+{cat:"General Awareness", q:"Which Indian scientist is credited with the discovery of the 'Raman effect'?", opts:["C.V. Raman","S.N. Bose","Homi Bhabha","Meghnad Saha"], ans:"C.V. Raman", marks:1, time:"2 min"},
+{cat:"General Awareness", q:"In India, the Finance Commission is constituted under which article of the Constitution?", opts:["Article 280","Article 370","Article 265","Article 280A"], ans:"Article 280", marks:1, time:"3 min"},
+{cat:"General Awareness", q:"Which mountain range is the oldest among the following?", opts:["Himalayas","Aravalli","Vindhya","Western Ghats"], ans:"Aravalli", marks:1, time:"4 min"},
+{cat:"General Awareness", q:"Which Indian law enacted in 1882 consolidated criminal law and is still the backbone of criminal jurisprudence (with amendments)?", opts:["Indian Penal Code (IPC)","Code of Criminal Procedure (CrPC)","Indian Evidence Act","Criminal Law Amendment Act"], ans:"Indian Penal Code (IPC)", marks:1, time:"3 min"},
+{cat:"General Awareness", q:"Which crop is primarily associated with 'Kharif' season in India?", opts:["Wheat","Maize","Mustard","Peas"], ans:"Maize", marks:1, time:"3 min"},
+{cat:"General Awareness", q:"The Sunderbans are best known as the largest continuous tract of which ecosystem?", opts:["Tropical rainforest","Mangrove forest","Deciduous forest","Alpine scrub"], ans:"Mangrove forest", marks:1, time:"2 min"},
+{cat:"General Awareness", q:"Which instrument did Aryabhata use as a model for explaining planetary motion in his works?", opts:["Geocentric epicycle model","Heliocentric model","Elliptical orbit model","Ptolemaic deferent model"], ans:"Geocentric epicycle model", marks:1, time:"4 min"},
+{cat:"General Awareness", q:"Which organisation publishes the 'Human Development Report' annually?", opts:["World Bank","United Nations Development Programme (UNDP)","OECD","WHO"], ans:"United Nations Development Programme (UNDP)", marks:1, time:"3 min"},
+{cat:"General Awareness", q:"Which Indian amendment added the words 'socialist' and 'secular' to the Preamble?", opts:["42nd Amendment","44th Amendment","24th Amendment","61st Amendment"], ans:"42nd Amendment", marks:1, time:"3 min"},
+{cat:"General Awareness", q:"Which element has the highest electronegativity on the Pauling scale?", opts:["Oxygen","Fluorine","Chlorine","Nitrogen"], ans:"Fluorine", marks:1, time:"2 min"},
+{cat:"General Awareness", q:"The classical Sanskrit dramatist Kalidasa is author of which famous play?", opts:["Shakuntala","Mricchakatika","Mudrarakshasa","Ratnavali"], ans:"Shakuntala", marks:1, time:"3 min"},
+{cat:"General Awareness", q:"Which Indian river's basin is the largest by area in the subcontinent?", opts:["Ganga","Godavari","Brahmaputra","Indus"], ans:"Ganga", marks:1, time:"4 min"},
+{cat:"General Awareness", q:"Which international agreement aims to limit global average temperature rise well below 2°C above pre-industrial levels?", opts:["Kyoto Protocol","Montreal Protocol","Paris Agreement","Geneva Convention"], ans:"Paris Agreement", marks:1, time:"3 min"},
+{cat:"General Awareness", q:"Which Indian classical music gharana is associated with the city of Lucknow and thumri style?", opts:["Gwalior gharana","Kathak gharana","Lucknow gharana","Patiala gharana"], ans:"Lucknow gharana", marks:1, time:"3 min"},
+{cat:"General Awareness", q:"Which public sector organisation in India is primarily responsible for exploration of oil and gas?", opts:["Steel Authority of India (SAIL)","Oil and Natural Gas Corporation (ONGC)","Coal India Limited (CIL)","Bharat Petroleum"], ans:"Oil and Natural Gas Corporation (ONGC)", marks:1, time:"3 min"},
+{cat:"General Awareness", q:"Which constitutional body in India supervises elections to Parliament and state legislatures?", opts:["Election Commission of India","Law Commission","Union Public Service Commission","Central Vigilance Commission"], ans:"Election Commission of India", marks:1, time:"2 min"},
+{cat:"General Awareness", q:"Which oxide of nitrogen is primarily responsible for ozone layer depletion when emitted into the stratosphere?", opts:["Nitrous oxide (N2O)","Nitric oxide (NO)","Nitrogen dioxide (NO2)","Dinitrogen tetroxide (N2O4)"], ans:"Nitrous oxide (N2O)", marks:1, time:"4 min"},
+
+];
+
+// STATE
+let currentIndex = 0;
+let responses = new Array(quiz.length).fill(null);
+let studentName = "";
+let timerSec = 30*60;
+let timerInterval = null;
+let examStarted = false;
+
+const startCard=document.getElementById('startCard'),
+      quizCard=document.getElementById('quizCard'),
+      resultCard=document.getElementById('resultCard'),
+      qHeading=document.getElementById('qHeading'),
+      qCategory=document.getElementById('qCategory'),
+      qbox=document.getElementById('qbox'),
+      navNumbers=document.getElementById('navNumbers'),
+      timerTop=document.getElementById('timerTop'),
+      timerMain=document.getElementById('timer');
+
+function escapeHtml(str){return String(str||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]))}
+
+function buildNav(){
+  navNumbers.innerHTML='';
+  quiz.forEach((_,i)=>{
+    const btn=document.createElement('button');
+    btn.type = "button"; // ✅ prevents form submission
+    btn.textContent = i + 1;
+    btn.dataset.idx = i;
+    btn.onclick = () => {
+      saveCurrent();
+      currentIndex = i;
+      renderQuestion();
+    };
+    navNumbers.appendChild(btn);
+  });
+}
+
+
+function renderQuestion(){
+  const item=quiz[currentIndex];
+  qHeading.textContent=`Question ${currentIndex+1}`;
+  qCategory.textContent=item.cat;
+  let html=`<div class="qtext">${item.q}</div>`;
+  item.opts.forEach((opt,i)=>{
+    const checked=(responses[currentIndex]===opt)?'checked':'';
+    html+=`<label class="opt"><input type="radio" name="opt" value="${escapeHtml(opt)}" ${checked}/> ${String.fromCharCode(65+i)}. ${opt}</label>`;
+  });
+  qbox.innerHTML=html;
+  Array.from(navNumbers.children).forEach((b,idx)=>b.classList.toggle('current',idx===currentIndex));
+}
+
+function saveCurrent(){
+  const sel=qbox.querySelector('input[name="opt"]:checked');
+  if(sel) responses[currentIndex]=sel.value;
+}
+
+function formatTime(s){const m=Math.floor(s/60),sec=s%60;return `${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;}
+
+function startExam(){
+  const nameInput=document.getElementById('studentName').value.trim();
+  if(!nameInput){alert('Enter your name');return;}
+  studentName=nameInput;
+  openFullscreen();
+  startCore();
+}
+function startDemo(){
+  studentName=document.getElementById('studentName').value.trim()||'Demo Student';
+  startCore(true);
+}
+function startCore(demo=false){
+  examStarted=true;
+  startCard.style.display='none'; quizCard.style.display='block';
+  timerMain.style.display=demo?'none':'block'; buildNav(); renderQuestion();
+  timerInterval=setInterval(()=>{
+    timerSec--; timerTop.textContent=formatTime(timerSec); timerMain.textContent=formatTime(timerSec);
+    if(timerSec<=0){clearInterval(timerInterval); alert('Time up'); finishExam();}
+  },1000);
+}
+function openFullscreen(){const el=document.documentElement; if(el.requestFullscreen) el.requestFullscreen();}
+function closeFullscreen(){if(document.exitFullscreen) document.exitFullscreen();}
+document.addEventListener('visibilitychange',()=>{if(examStarted&&document.hidden){alert('Tab switched. Auto-submit.');finishExam();}});
+document.addEventListener('fullscreenchange',()=>{if(examStarted&&!document.fullscreenElement){alert('Exited fullscreen. Auto-submit.');finishExam();}});
+
+document.getElementById('startBtn').addEventListener('click',e=>{e.preventDefault();startExam();});
+document.getElementById('demoBtn').addEventListener('click',e=>{e.preventDefault();startDemo();});
+document.getElementById('prevBtn').addEventListener('click',()=>{saveCurrent();if(currentIndex>0)currentIndex--;renderQuestion();});
+document.getElementById('nextBtn').addEventListener('click',()=>{saveCurrent();if(currentIndex<quiz.length-1)currentIndex++;renderQuestion();});
+document.getElementById('submitBtn').addEventListener('click',()=>{if(confirm('Submit exam?'))finishExam();});
+
+function finishExam(){
+  if(!examStarted) return;
+  examStarted=false; clearInterval(timerInterval); saveCurrent();
+  let score=0,max=0; const details=[];
+  quiz.forEach((it,i)=>{max+=it.marks;const got=(responses[i]===it.ans)?it.marks:0;score+=got;
+    details.push({q:it.q,given:responses[i]||'(no answer)',correct:it.ans,marks:got});
+  });
+  quizCard.style.display='none'; resultCard.style.display='block';
+  document.getElementById('resultSummary').innerHTML=`<p><strong>Name:</strong> ${escapeHtml(studentName)}<br><strong>Score:</strong> ${score}/${max}</p>`;
+  const d=document.getElementById('detailSummary'); d.innerHTML='';
+  details.forEach((r,i)=>{const el=document.createElement('div'); el.innerHTML=`<strong>Q${i+1}:</strong> ${r.q}<br>Your: ${r.given} | Correct: ${r.correct}`; d.appendChild(el);});
+
+  // --- send result to Google Script ---
+  fetch("https://script.google.com/macros/s/AKfycbym7870t9FYTGPZqgXjxzS2WdL4ye4uqfudkpfVQHAAJUUKn6DPt6RQRCIvlyHfJmSk/exec", {
+    method: "POST",
+    body: new URLSearchParams({
+      name: studentName,
+      score: score,
+      total: max,
+      answers: JSON.stringify(details)
+    })
+  })
+  .then(()=>console.log("Result sent"))
+  .catch(err=>console.error("Error sending result:",err));
+
+  try{closeFullscreen();}catch(e){}
+}
+</script>
+</body>
+</html>
