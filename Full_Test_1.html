@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>RRB Section Control — Full-Length Test (50 Qs)</title>
+<title>RRB Section Control — Full-Length Test (100 Qs)</title>
 <style>
   :root{--brand:#2563eb;--danger:#b91c1c;--muted:#6b7280}
   body{font-family:system-ui,-apple-system,'Segoe UI',Roboto,Arial; background:#f8fafc; margin:0}
@@ -38,10 +38,10 @@
     <header>
       <div>
         <h1>RRB Section Control — Full-Length Test 6</h1>
-        <div style="color:var(--muted);margin-top:6px">50 Questions | Time:30 minutes | Each question = 1 mark</div>
+        <div style="color:var(--muted);margin-top:6px">100 Questions | Time:100 minutes | Each question = 1 mark | –⅓ negative for wrong answer</div>
       </div>
       <div style="text-align:right">
-        <div id="timer" style="display:none">30:00</div>
+        <div id="timer" style="display:none">100:00</div>
         <div style="font-size:12px;color:var(--muted)">Time Remaining</div>
       </div>
     </header>
@@ -49,7 +49,7 @@
     <div class="intro" style="margin-top:14px">
       <p><strong>Instructions:</strong></p>
       <ul>
-        <li>Enter your name and press <strong>Start Exam</strong>. The exam will go full-screen and the 30-minute timer will begin.</li>
+        <li>Enter your name and press <strong>Start Exam</strong>. The exam will go full-screen and the 100-minute timer will begin.</li>
         <li>Do not exit full-screen or switch tabs — doing so will auto-submit your exam.</li>
         <li>You may navigate using the numbered buttons, and submit when done. The timer will auto-submit when time ends.</li>
       </ul>
@@ -72,7 +72,7 @@
         <div style="color:var(--muted)" id="qCategory"></div>
       </div>
       <div style="text-align:right">
-        <div id="timerTop" style="font-weight:700;color:var(--danger);font-size:18px">30:00</div>
+        <div id="timerTop" style="font-weight:700;color:var(--danger);font-size:18px">100:00</div>
         <div style="font-size:12px;color:var(--muted)">Time Remaining</div>
       </div>
     </header>
@@ -139,6 +139,7 @@ const quiz = [
 {cat:"HCF & LCM", q:"Find HCF and LCM of 72 and 108. Choose LCM.", opts:["216","324","288","144"], ans:"216", marks:1, time:"3 min"},
 {cat:"Number System", q:"Find the smallest 5-digit number divisible by 12, 15, and 18.", opts:["10800","10080","10350","10125"], ans:"10080", marks:1, time:"3 min"},
 {cat:"Geometry", q:"In a triangle, sides are in ratio 3:4:5 and perimeter is 36 cm. Find the area.", opts:["54 cm²","48 cm²","60 cm²","72 cm²"], ans:"54 cm²", marks:1, time:"3 min"},
+{cat:"Mathematics", q:"If log₃(x+4) – log₃(x–4) = 2, find x.", opts:["5","7","8","10"], ans:"8", marks:1, time:"4 min"},
 {cat:"Syllogism", q:"Statements: All X are Y. Some Y are Z. Conclusions: I. Some Z are X. II. Some X are Z. Which conclusions follow?", opts:["Only I follows","Only II follows","Both follow","Neither follows"], ans:"Neither follows", marks:1, time:"4 min"},
 {cat:"Series Completion", q:"Find the next number in series: 7, 13, 25, 49, 97, ?", opts:["193","191","195","189"], ans:"193", marks:1, time:"4 min"},
 {cat:"Coding-Decoding", q:"If 'SMART' is coded as 'URBWV', how is 'TRAIN' coded?", opts:["VUDLQ","VUDLQ","VUDSQ","VWFLO"], ans:"VUDLQ", marks:1, time:"4 min"},
@@ -148,6 +149,7 @@ const quiz = [
 {cat:"Venn Diagram", q:"In a class 40 study Physics, 50 study Chemistry, 30 study Biology. 15 study both Physics & Chemistry, 10 Chemistry & Biology, 8 Physics & Biology, 5 all three. How many students study none if total 100?", opts:["12","10","8","7"], ans:"12", marks:1, time:"5 min"},
 {cat:"Data Sufficiency", q:"Is x>y? (1) x²>y². (2) x+y>0. Choose:", opts:["(1) alone sufficient","(2) alone sufficient","Either sufficient","Need both"], ans:"(1) alone sufficient", marks:1, time:"4 min"},
 {cat:"Logical Sequence", q:"Arrange: (P) Investigate, (Q) Report, (R) Observe, (S) Collect data, (T) Conclude. Proper order?", opts:["R-S-P-Q-T","S-R-P-Q-T","R-S-Q-P-T","S-R-Q-P-T"], ans:"R-S-P-Q-T", marks:1, time:"4 min"},
+{cat:"Reasoning", q:"Statements: All pens are books. Some books are erasers. Conclusions: I. Some pens are erasers. II. Some erasers are not pens. Which conclusion follows?", opts:["Only II follows","Only I follows","Both follow","Neither follows"], ans:"Only II follows", marks:1, time:"4 min"},
 {cat:"Analogy", q:"Glove : Hand :: Sock : ?", opts:["Foot","Shoe","Toe","Leg"], ans:"Foot", marks:1, time:"2 min"},
 {cat:"Coding (Position)", q:"In a code, each letter is replaced by the letter 3 places to its right. The code for 'BAD' will be?", opts:["EDG","EDC","EAG","EDB"], ans:"EDG", marks:1, time:"3 min"},
 {cat:"Number Puzzle", q:"If 5⊕3=26 and 6⊕4=40, find 7⊕5 (pattern: a⊕b = a² + ab + b)", opts:["79","84","84","85"], ans:"84", marks:1, time:"4 min"},
@@ -169,7 +171,7 @@ const quiz = [
 {cat:"Direction Sense", q:"A walks to point B 20m east, then to C 15m north, then to D 20m west. Which direction from A to D?", opts:["North","South","West","North-East"], ans:"North", marks:1, time:"3 min"},
 {cat:"Data Interpretation", q:"Table: A= {10,20,30}, B={5,15,25}. If we pair largest of A with smallest of B etc., sum of products? (30×5)+(20×15)+(10×25) = ?", opts:["950","900","850","1000"], ans:"950", marks:1, time:"4 min"},
 {cat:"Coding (binary logic)", q:"If 1=TRUE, 0=FALSE. For inputs A=1,B=0,C=1 evaluate (A AND B) OR (B XOR C). Result?", opts:["1","0","Depends","Error"], ans:"1", marks:1, time:"3 min"},
-{cat:"Puzzle (coins)", q:"You have 3 coins, one is double-headed. Pick a coin at random and toss it — you get heads. Probability that coin is double-headed?", opts:["1/2","2/3","1/3","3/4"], ans:"2/3", marks:1, time:"4 min"}
+{cat:"Puzzle (coins)", q:"You have 3 coins, one is double-headed. Pick a coin at random and toss it — you get heads. Probability that coin is double-headed?", opts:["1/2","2/3","1/3","3/4"], ans:"2/3", marks:1, time:"4 min"},
 {cat:"General Awareness", q:"The Indian Councils Act that introduced the portfolio system in the Government of India was passed in which year?", opts:["1861","1892","1909","1919"], ans:"1861", marks:1, time:"3 min"},
 {cat:"General Awareness", q:"Which Vedic period text is primarily associated with early development of iron metallurgy in India?", opts:["Rigveda","Yajurveda","Atharvaveda","Samaveda"], ans:"Atharvaveda", marks:1, time:"3 min"},
 {cat:"General Awareness", q:"The term 'Green Revolution' in India is most directly associated with which of the following crops?", opts:["Rice and Wheat","Cotton and Jute","Millets and Pulses","Tea and Coffee"], ans:"Rice and Wheat", marks:1, time:"3 min"},
@@ -203,6 +205,7 @@ const quiz = [
 {cat:"General Awareness", q:"Which public sector organisation in India is primarily responsible for exploration of oil and gas?", opts:["Steel Authority of India (SAIL)","Oil and Natural Gas Corporation (ONGC)","Coal India Limited (CIL)","Bharat Petroleum"], ans:"Oil and Natural Gas Corporation (ONGC)", marks:1, time:"3 min"},
 {cat:"General Awareness", q:"Which constitutional body in India supervises elections to Parliament and state legislatures?", opts:["Election Commission of India","Law Commission","Union Public Service Commission","Central Vigilance Commission"], ans:"Election Commission of India", marks:1, time:"2 min"},
 {cat:"General Awareness", q:"Which oxide of nitrogen is primarily responsible for ozone layer depletion when emitted into the stratosphere?", opts:["Nitrous oxide (N2O)","Nitric oxide (NO)","Nitrogen dioxide (NO2)","Dinitrogen tetroxide (N2O4)"], ans:"Nitrous oxide (N2O)", marks:1, time:"4 min"},
+{cat:"General Awareness", q:"Who was the first woman to become President of the United Nations General Assembly?", opts:["Vijaya Lakshmi Pandit","Indira Gandhi","Sarojini Naidu","Golda Meir"], ans:"Vijaya Lakshmi Pandit", marks:1, time:"3 min"},
 
 ];
 
@@ -210,7 +213,7 @@ const quiz = [
 let currentIndex = 0;
 let responses = new Array(quiz.length).fill(null);
 let studentName = "";
-let timerSec = 30*60;
+let timerSec = 100*60;
 let timerInterval = null;
 let examStarted = false;
 
@@ -296,22 +299,59 @@ document.getElementById('submitBtn').addEventListener('click',()=>{if(confirm('S
 
 function finishExam(){
   if(!examStarted) return;
-  examStarted=false; clearInterval(timerInterval); saveCurrent();
-  let score=0,max=0; const details=[];
-  quiz.forEach((it,i)=>{max+=it.marks;const got=(responses[i]===it.ans)?it.marks:0;score+=got;
-    details.push({q:it.q,given:responses[i]||'(no answer)',correct:it.ans,marks:got});
+  examStarted = false;
+  clearInterval(timerInterval);
+  saveCurrent();
+
+  let score = 0;
+  let max = 0;
+  const details = [];
+
+  quiz.forEach((it, i) => {
+    max += it.marks;
+    let got = 0;
+
+    // responses[i] is null if unanswered — treat as unattempted
+    if (responses[i]) {
+      if (responses[i] === it.ans) {
+        got = it.marks;           // correct
+      } else {
+        got = - (it.marks / 3);   // wrong: -1/3 of marks
+      }
+    } // else got stays 0 for unattempted
+
+    score += got;
+
+    details.push({
+      q: it.q,
+      given: responses[i] || '(no answer)',
+      correct: it.ans,
+      marks: got
+    });
   });
-  quizCard.style.display='none'; resultCard.style.display='block';
-  document.getElementById('resultSummary').innerHTML=`<p><strong>Name:</strong> ${escapeHtml(studentName)}<br><strong>Score:</strong> ${score}/${max}</p>`;
-  const d=document.getElementById('detailSummary'); d.innerHTML='';
-  details.forEach((r,i)=>{const el=document.createElement('div'); el.innerHTML=`<strong>Q${i+1}:</strong> ${r.q}<br>Your: ${r.given} | Correct: ${r.correct}`; d.appendChild(el);});
+
+  // optional: round score to 2 decimals for display
+  const displayScore = Math.round((score + Number.EPSILON) * 100) / 100;
+
+  quizCard.style.display = 'none';
+  resultCard.style.display = 'block';
+  document.getElementById('resultSummary').innerHTML =
+    `<p><strong>Name:</strong> ${escapeHtml(studentName)}<br><strong>Score:</strong> ${displayScore}/${max}</p>`;
+
+  const d = document.getElementById('detailSummary');
+  d.innerHTML = '';
+  details.forEach((r, i) => {
+    const el = document.createElement('div');
+    el.innerHTML = `<strong>Q${i+1}:</strong> ${r.q}<br>Your: ${escapeHtml(String(r.given))} | Correct: ${escapeHtml(String(r.correct))} | Marks: ${r.marks}`;
+    d.appendChild(el);
+  });
 
   // --- send result to Google Script ---
   fetch("https://script.google.com/macros/s/AKfycbym7870t9FYTGPZqgXjxzS2WdL4ye4uqfudkpfVQHAAJUUKn6DPt6RQRCIvlyHfJmSk/exec", {
     method: "POST",
     body: new URLSearchParams({
       name: studentName,
-      score: score,
+      score: displayScore,
       total: max,
       answers: JSON.stringify(details)
     })
@@ -319,8 +359,9 @@ function finishExam(){
   .then(()=>console.log("Result sent"))
   .catch(err=>console.error("Error sending result:",err));
 
-  try{closeFullscreen();}catch(e){}
+  try{ closeFullscreen(); } catch(e) {}
 }
+
 </script>
 </body>
 </html>
