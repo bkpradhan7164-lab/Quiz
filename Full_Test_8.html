@@ -1,0 +1,369 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>RRB Section Control — Full-Length Test (100 Qs)</title>
+<style>
+  :root{--brand:#2563eb;--danger:#b91c1c;--muted:#6b7280}
+  body{font-family:system-ui,-apple-system,'Segoe UI',Roboto,Arial; background:#f8fafc; margin:0}
+  .wrap{max-width:1100px;margin:18px auto;padding:18px}
+  .card{background:#fff;border-radius:10px;padding:18px;box-shadow:0 6px 18px rgba(2,6,23,0.06)}
+  header{display:flex;justify-content:space-between;align-items:center;gap:12px}
+  h1{font-size:20px;margin:0}
+  #timer{font-weight:700;color:var(--danger);font-size:16px}
+  .intro ul{margin-top:6px}
+  input[type="text"]{width:100%;padding:8px;border-radius:6px;border:1px solid #e5e7eb}
+  .controls{display:flex;gap:8px;align-items:center;margin-top:12px}
+  button{background:var(--brand);color:#fff;padding:9px 12px;border-radius:8px;border:none;cursor:pointer}
+  button.secondary{background:#64748b}
+  .qbox{margin-top:14px}
+  .qtext{font-weight:600;margin-bottom:10px}
+  .opts{display:block;margin-bottom:6px}
+  label.opt{display:block;padding:10px;border-radius:8px;border:1px solid #e6e6e6;margin-bottom:8px;cursor:pointer;background:#fff}
+  label.opt input{margin-right:8px}
+  .nav-numbers{display:flex;flex-wrap:wrap;gap:6px;padding:10px 0}
+  .nav-numbers button{width:40px;height:36px;border-radius:6px;padding:0}
+  .nav-numbers button.current{background:#60a5fa}
+  .result{margin-top:12px}
+  .summary{margin-top:12px;max-height:320px;overflow:auto;padding:8px;border-radius:8px;border:1px solid #e6e6e6}
+  .footer{margin-top:14px;color:var(--muted);font-size:13px}
+</style>
+</head>
+<body>
+<form id="quizForm">
+<div class="wrap">
+  <!-- START CARD -->
+  <div class="card" id="startCard">
+    <header>
+      <div>
+        <h1>RRB Section Control — Full-Length Test 6</h1>
+        <div style="color:var(--muted);margin-top:6px">100 Questions | Time:80 minutes | Each question = 1 mark | –⅓ negative for wrong answer</div>
+      </div>
+      <div style="text-align:right">
+        <div id="timer" style="display:none">80:00</div>
+        <div style="font-size:12px;color:var(--muted)">Time Remaining</div>
+      </div>
+    </header>
+
+    <div class="intro" style="margin-top:14px">
+      <p><strong>Instructions:</strong></p>
+      <ul>
+        <li>Enter your name and press <strong>Start Exam</strong>. The exam will go full-screen and the 80-minute timer will begin.</li>
+        <li>Do not exit full-screen or switch tabs — doing so will auto-submit your exam.</li>
+        <li>You may navigate using the numbered buttons, and submit when done. The timer will auto-submit when time ends.</li>
+      </ul>
+
+      <p><label>Student name (required)</label>
+      <input type="text" id="studentName" placeholder="Enter your full name" /></p>
+
+      <div class="controls">
+        <button id="startBtn">Start Exam</button>
+        <button class="secondary" id="demoBtn">Demo (No Fullscreen)</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- QUIZ CARD -->
+  <div class="card" id="quizCard" style="display:none;margin-top:14px">
+    <header style="align-items:flex-start">
+      <div>
+        <h2 id="qHeading">Question 1</h2>
+        <div style="color:var(--muted)" id="qCategory"></div>
+      </div>
+      <div style="text-align:right">
+        <div id="timerTop" style="font-weight:700;color:var(--danger);font-size:18px">80:00</div>
+        <div style="font-size:12px;color:var(--muted)">Time Remaining</div>
+      </div>
+    </header>
+
+    <div class="qbox" id="qbox"></div>
+    <div class="nav-numbers" id="navNumbers"></div>
+
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px">
+      <div>
+        <button id="prevBtn" class="secondary" type="button">◀ Prev</button>
+        <button id="nextBtn" type="button">Next ▶</button>
+      </div>
+      <div>
+        <button id="submitBtn" style="background:#16a34a" type="button">Submit Exam</button>
+      </div>
+    </div>
+
+    <div class="footer">You must remain in full-screen mode. Switching tabs or exiting full-screen will auto-submit.</div>
+  </div>
+
+  <!-- RESULT CARD -->
+  <div class="card" id="resultCard" style="display:none;margin-top:14px">
+    <h2>Exam Submitted</h2>
+    <div id="resultSummary" class="result"></div>
+    <div class="summary" id="detailSummary"></div>
+  </div>
+</div>
+</form>
+
+<script>
+// ---------------- QUIZ LOGIC ----------------
+const quiz = [
+
+{cat:"Reasoning", q:"Based on the English alphabetical order, three of the following four letter-cluster pairs are alike in a certain way and thus form a group. Which letter-cluster pair DOES NOT belong to that group?", opts:["PK - MJ","NO - JJ","FG - AB","JK - EF"], ans:"NO - JJ", marks:1, time:"3 min"},
+{cat:"Mathematics", q:"The mean proportional between 0.06 and 6 is:", opts:["0.06","0.6","60","6"], ans:"0.6", marks:1, time:"3 min"},
+{cat:"General Awareness", q:"Who is the current Chief Minister of Delhi as of March 2025, and from which constituency was he/she elected in the 2025 Delhi Assembly elections?", opts:["Rekha Gupta from Rajinder Nagar","Rekha Gupta from Shalimar Bagh","Alishi Marlena from Kalkaji","Arvind Kejriwal from New Delhi"], ans:"Arvind Kejriwal from New Delhi", marks:1, time:"3 min"},
+{cat:"Mathematics", q:"The simplified value of 66 - 4 x (30 + 3) + 40 is:", opts:["-26","-27","-29","-33"], ans:"-26", marks:1, time:"3 min"},
+{cat:"General Awareness", q:"The Swadeshi Movement, launched to oppose the partition of Bengal and promote Indian goods, began in which year?", opts:["1904","1906","1907","1905"], ans:"1905", marks:1, time:"3 min"},
+{cat:"Mathematics", q:"The average of 10 observations is 40. It was realised later that an observation was misread as 34 in place of 43. Find the correct average.", opts:["39.9","43.9","41.9","40.9"], ans:"40.9", marks:1, time:"3 min"},
+{cat:"Reasoning", q:"What should come in place of the question mark (?) in the given series based on the English alphabetical order? LJQ NLS PNU RPW ?", opts:["TRZ","TRY","TSZ","TSY"], ans:"TRY", marks:1, time:"3 min"},
+{cat:"Reasoning", q:"A, B, C, D, E and F live on six different floors of the same building. The lowermost floor in the building is numbered 1, the floor above it, number 2 and so on till the topmost floor is numbered 6. The product of floors on which D and F live is 10. C lives immediately above E. The sum of floors on which B and D live is 11. How many people live between A and E?", opts:["3","1","2","4"], ans:"2", marks:1, time:"3 min"},
+{cat:"Reasoning", q:"Refer to the following number and symbol series and answer the question that follows. (Left) 5 $ 5 % 8 7 * 5 % 8 8 @ 2 6 2 £ 3 8 1 & 5 6 (Right) How many such numbers are there each of which is immediately preceded by a number and also immediately followed by a number?", opts:["2","3","4","7"], ans:"4", marks:1, time:"3 min"},
+{cat:"General Awareness", q:"Who among the following has been appointed as the Chairman of Indian Space Research Organisation in January 2025?", opts:["Manish Singhal","Dr. Mayank Sharma","Dr. V Narayanan","Bhuvnesh Kumar"], ans:"Dr. V Narayanan", marks:1, time:"3 min"},
+{cat:"General Awareness", q:"What is the purpose of pressing Alt + Tab on the keyboard of a computer system?", opts:["Switches between open applications","Shuts down the system","Minimises all windows","Opens Task Manager"], ans:"Switches between open applications", marks:1, time:"3 min"},
+{cat:"Mathematics", q:"The ratio of the market prices of gram and pea is 2 : 5, and the ratio of the quantities consumed by a family is 4 : 3. Find the ratio of the expenditure on gram to pea.", opts:["9 : 16","3 : 4","8 : 15","17 : 10"], ans:"8 : 15", marks:1, time:"3 min"},
+{cat:"Mathematics", q:"The average of first 13 whole numbers is:", opts:["6","6.5","5","7"], ans:"6", marks:1, time:"3 min"},
+{cat:"General Awareness", q:"In India, a city with a population of less than 10,000 and more than 5000 is classified as which type of class town?", opts:["Class VI","Class I","Class V","Class II"], ans:"Class V", marks:1, time:"3 min"},
+{cat:"General Awareness", q:"In India, which of the following is a groundwater-based irrigation source?", opts:["Pond","Tank","River canal","Open-well"], ans:"Open-well", marks:1, time:"3 min"},
+{cat:"Mathematics", q:"Ashish has ₹1,218 with him. He divides it amongst his sons Arun and Mahesh and asks them to invest it at 10% rate of interest compounded annually. It was seen that Arun and Mahesh got same amount after 11 and 12 years, respectively. How much (in ₹) did Ashish give to Mahesh?", opts:["430","580","638","738"], ans:"580", marks:1, time:"3 min"},
+{cat:"General Awareness", q:"Consider a hierarchical file system. If a user attempts to delete a non-empty directory using a standard 'delete directory' command without any recursive options, what is the most likely outcome?", opts:["The operating system will automatically delete all files and subdirectories within it.","The operating system will prompt the user for confirmation to delete each item within the directory.","Only the directory structure will be removed, leaving the files and subdirectories orphaned.","The operating system will return an error indicating that the directory is not empty."], ans:"The operating system will return an error indicating that the directory is not empty.", marks:1, time:"3 min"},
+{cat:"General Awareness", q:"What does OCI stand for in the context of Indian citizenship?", opts:["Overseas Card for Indians","Official Citizen of India","Overseas Citizen of India","Original Citizen Identity"], ans:"Overseas Citizen of India", marks:1, time:"3 min"},
+{cat:"General Awareness", q:"Which leader presided over the 1929 Lahore Session of the Indian National Congress, where the resolution for 'Purna Swaraj' was passed?", opts:["Subhas Chandra Bose","Jawaharlal Nehru","Lala Lajpat Rai","CR Das"], ans:"Jawaharlal Nehru", marks:1, time:"3 min"},
+{cat:"Mathematics", q:"One pipe can fill the tank in 9 minutes while another pipe can empty completely filled tank in 90 minutes. If both the pipes are operated together on empty tank, how long (in minutes) will it take to fill half of the tank?", opts:["5","10","6","11"], ans:"5", marks:1, time:"3 min"},
+{cat:"Mathematics", q:"A vendor bought lemons at 6 for ₹1. How many lemons must he sell for ₹1 to gain 100%?", opts:["3","7","4","5"], ans:"3", marks:1, time:"3 min"},
+{cat:"Reasoning", q:"In a certain code language, 'GATE' is coded as '4628' and 'TURN' is coded as '3567'. What is the code for 'T' in the given code language?", opts:["4","6","3","2"], ans:"3", marks:1, time:"3 min"},
+{cat:"Mathematics", q:"The sum of the present ages of a father and his son is 18 years more than 4 times the present age of the son. After 5 years, 4 times the father's age will be 8 years less than 14 times the son's age. The difference (in years) between the present ages of the father and the son is:", opts:["49","45","48","53"], ans:"48", marks:1, time:"3 min"},
+{cat:"Mathematics", q:"The volume of a solid cylinder is 852 cm³ and its height is 38 cm. What is the total surface area of the solid cylinder? (Round your answer to the nearest integer)", opts:["1969 cm²","1980 cm²","1954 cm²","1936 cm²"], ans:"1954 cm²", marks:1, time:"3 min"},
+{cat:"General Awareness", q:"In which city of India was the Arctic Circle India Forum held on 3-4 May 2025?", opts:["Kolkata","Patna","Chandigarh","New Delhi"], ans:"New Delhi", marks:1, time:"3 min"},
+{cat:"Reasoning", q:"Select the number from among the given options that can replace the question mark (?) in the following series. 139 136 131 124 115 ? 91", opts:["106","109","104","101"], ans:"104", marks:1, time:"3 min"},
+{cat:"Mathematics", q:"Simplify (5x - 2y)² + (2x + 5y)² + (5x + 2y)(5x - 2y).", opts:["-55x² + 25y²","-54x² - 25y²","54x² + 25y²","55x² - 25y²"], ans:"54x² + 25y²", marks:1, time:"3 min"},
+{cat:"General Awareness", q:"Which of the following Urban Local Government Bodies in India was discontinued after 1992?", opts:["Municipal Committee/Council","Municipal Corporation","Notified Area Committee","Nagar Panchayat"], ans:"Notified Area Committee", marks:1, time:"3 min"},
+{cat:"Reasoning", q:"A, B, C, D, G, H, and I are sitting around a circular table facing the centre. B sits third to the left of I. G sits second to the left of H. Only I sits between A and G. C is not an immediate neighbor of B. How many people sit between D and G when counted from the right of D?", opts:["Four","One","Two","Three"], ans:"Three", marks:1, time:"3 min"},
+{cat:"General Awareness", q:"What is the primary function of a Notified Area Committee in India?", opts:["Regulate local elections for better local self-governance","Oversee military areas to help address military and civilian issues","Handle port activities and ensure their smooth functioning","Manage developing towns due to get a municipality status"], ans:"Manage developing towns due to get a municipality status", marks:1, time:"3 min"},
+{cat:"Reasoning", q:"Below are given two sets of numbers. In each set of numbers, a certain mathematical operation on the first number results in the second number. Similarly, a certain mathematical operation on the second number results in the third number and so on. Which of the given options follows the same set of operations as in the question? 14 - 15 - 20 - 40 ; 19 - 20 - 25 - 50", opts:["8 - 10 - 15 - 30","3 - 4 - 9 - 14","7 - 9 - 18 - 20","5 - 6 - 11 - 22"], ans:"5 - 6 - 11 - 22", marks:1, time:"3 min"},
+{cat:"Reasoning", q:"In a certain code language, 'BLUE' is coded as '4628' and 'LOAD' is coded as '3567'. What is the code for 'L' in the given code language?", opts:["3","6","7","8"], ans:"6", marks:1, time:"3 min"},
+{cat:"Reasoning", q:"Refer to the following number and symbol series and answer the question that follows. (Left) @ $ 8.7 7 @ 5.7 8.4 1.9 3.5 7.8 8.7 € € 1 (Right) How many such symbols are there each of which is immediately preceded by a number and also immediately followed by a symbol?", opts:["5","4","2","3"], ans:"2", marks:1, time:"3 min"},
+{cat:"Mathematics", q:"Simplify: ⁶√4096 + ⁴√50625 + ³√21952 + √3364", opts:["55","105","24","75"], ans:"105", marks:1, time:"3 min"},
+{cat:"Mathematics", q:"If a² + b² = 111, a × b = 27, and a > b, find the value of (a - b)/(a + b).", opts:["√(53/165)","√(57/165)","53/165","57/165"], ans:"√(57/165)", marks:1, time:"3 min"},
+{cat:"Reasoning", q:"Which of the following letter-number clusters will replace the question mark (?) in the given series to make it logically complete? GKO 11, IMQ 13, KOS 15, MQU 17, ?", opts:["OSW 19","NQS 21","ORT 21","NTZ 19"], ans:"OSW 19", marks:1, time:"3 min"},
+{cat:"Mathematics", q:"If 'A' stands for 'x', 'B' stands for '-', 'C' stands for '+', and 'D' stands for '-', then the resultant of which of the following will be 9?", opts:["8 B 3 A 10 C 2 D 5","8 B 3 C 10 A 2 D 5","8 A 3 C 10 B 2 D 5","8 C 3 B 10 A 2 D 5"], ans:"8 B 3 C 10 A 2 D 5", marks:1, time:"3 min"},
+{cat:"General Awareness", q:"Which movement or idea is associated with the Wardha Scheme of Basic Education proposed in 1937?", opts:["Nai Talim or Basic Education","Free higher education","Education through English","Adult Literacy Mission"], ans:"Nai Talim or Basic Education", marks:1, time:"3 min"},
+{cat:"General Awareness", q:"Which kitchen process is an example of osmosis?", opts:["Placing raw mango in a concentrated salt solution","Grinding spices together","Flushing food items with nitrogen","Boiling pasta in milk"], ans:"Placing raw mango in a concentrated salt solution", marks:1, time:"3 min"},
+{cat:"Reasoning", q:"Tanveer starts from Point B and drives 2 km towards west. He then takes a right turn, drives 4 km, turns left and drives 5 km. He then takes a right turn and drives 3 km. He takes a final right turn, drives 7 km and stops at Point P. How far (shortest distance) and towards which direction should he drive in order to reach Point B again (all turns are 90° turns only unless specified)?", opts:["5 km south","7 km south","6 km south","4 km south"], ans:"7 km south", marks:1, time:"3 min"},
+{cat:"Reasoning", q:"Based on the English alphabetical order, three of the following four letter-cluster pairs are alike in a certain way and thus form a group. Which letter-cluster pair DOES NOT belong to that group?", opts:["IM - KO","SP - OI","LP - NR","GK - IM"], ans:"SP - OI", marks:1, time:"3 min"},
+{cat:"Reasoning", q:"Raju starts from point A and drives 9 km towards the west. He then takes a left turn, drives 7 km, turns left and drives 11 km. He then takes a left turn and drives 13 km. He takes a final left turn, drives 2 km and stops at point P. How far (shortest distance) and towards which direction should he drive in order to reach point A again? (All turns are 90 degree turns only unless specified.)", opts:["5 km to the north","6 km to the south","5 km to the south","6 km to the north"], ans:"6 km to the south", marks:1, time:"3 min"},
+{cat:"Reasoning", q:"In a certain code language, 'BRAVE' is coded as '29317' and 'VIBER' is coded as '38792'. What is the code for 'A' in the given code language?", opts:["7","2","1","9"], ans:"1", marks:1, time:"3 min"},
+{cat:"Mathematics", q:"Surendra has 102 litres of Oil A and 224 litres of Oil B. He fills a number of identical containers with the two types of oil in a manner that each container has only one type of oil, and all containers are completely filled. What can be the maximum volume (in litres) of each container that Surendra uses, so that all the oil that Surendra has, of both the types, can be poured into these containers?", opts:["1","8","9","2"], ans:"2", marks:1, time:"3 min"},
+{cat:"General Awareness", q:"Under the Digital Agriculture Mission launched in 2024, which of the following is/are among the foundational registries of AgriStack? 1. Farmers' Registry 2. Village Panchayat Audit Database 3. Crop Sown Registry", opts:["2 and 3 only","All 1, 2, and 3","1 only","1 and 3 only"], ans:"1 and 3 only", marks:1, time:"3 min"},
+{cat:"General Awareness", q:"In a multitasking operating system, what role does RAM primarily play when multiple applications are open simultaneously?", opts:["It acts as permanent storage for installed software.","It temporarily holds active program data and instructions to enable fast switching between tasks.","It queues printing tasks before they reach the printer.","It processes user input commands from external devices like keyboard or mouse."], ans:"It temporarily holds active program data and instructions to enable fast switching between tasks.", marks:1, time:"3 min"},
+{cat:"General Awareness", q:"What is the purpose of the 'One Nation, One Permit' scheme proposed by the Ministry of Road Transport and Highways?", opts:["Single road ticketing platform system","Common civil aviation license","Ease of transport for inter-state freight vehicles","Permit for urban parking facilities"], ans:"Ease of transport for inter-state freight vehicles", marks:1, time:"3 min"},
+{cat:"General Awareness", q:"Who administered the agrahara lands during the post-Gupta period?", opts:["Village assemblies","Brahmins","Feudal lords","Monks"], ans:"Brahmins", marks:1, time:"3 min"},
+{cat:"Mathematics", q:"Find the surface area of a sphere whose diameter is equal to 112 cm.", opts:["36,976 cm²","38,980 cm²","37,948 cm²","39,424 cm²"], ans:"39,424 cm²", marks:1, time:"3 min"},
+{cat:"Mathematics", q:"Find the duration (in years) in which ₹1,200 will amount to ₹2,220 at a rate of 20% per annum simple interest.", opts:["6.25","3.25","4.25","5.25"], ans:"4.25", marks:1, time:"3 min"},
+{cat:"General Awareness", q:"What is the Gram Sabha in the context of the Panchayati Raj system in India?", opts:["A block-level committee","A judicial body for urban areas","The deliberative assembly of all eligible village residents","An advisory council of State representatives"], ans:"The deliberative assembly of all eligible village residents", marks:1, time:"3 min"},
+{cat:"General Awareness", q:"What is the primary contributor to the sour taste in foods like lemons, vinegar and yoghurt?", opts:["Alkaloids","Salts","Bases","Acids"], ans:"Acids", marks:1, time:"3 min"},
+{cat:"General Awareness", q:"Free legal aid is part of which part of the Indian Constitution?", opts:["Preamble","Directive Principles","Fundamental Rights","Fundamental Duties"], ans:"Directive Principles", marks:1, time:"3 min"},
+{cat:"General Awareness", q:"Who among the following has been appointed as the Comptroller General of India in November 2024?", opts:["Mahesh Kumar Aggarwal","Tuhin Kanta Pandey","K Sanjay Murthy","Dr. V Narayanan"], ans:"Tuhin Kanta Pandey", marks:1, time:"3 min"},
+{cat:"Reasoning", q:"GV 14 is related to LS 5 in a certain way. In the same way, HQ 5 is related to MN -4. To which of the given options is MG 0 related, following the same logic?", opts:["NY -6","RD -9","BG -7","HR -3"], ans:"HR -3", marks:1, time:"3 min"},
+{cat:"General Awareness", q:"Which of the following best explains why uracil is used in RNA instead of thymine?", opts:["Uracil enhances RNA splicing.","Thymine is not recognized by ribosomes.","Thymine inhibits transcription.","Uracil is energetically cheaper to synthesise."], ans:"Uracil is energetically cheaper to synthesise.", marks:1, time:"3 min"},
+{cat:"Mathematics", q:"The marked price of a bed is ₹1,600, which is 25% above the cost price. It is sold at a discount of 16% on the marked price. Find the profit percentage.", opts:["5%","4%","6%","7%"], ans:"5%", marks:1, time:"3 min"},
+{cat:"Reasoning", q:"Each of the digits in the number 8569142 is arranged in the descending order from left to right. The position(s) of how many digits will remain unchanged in the new number thus formed as compared to that in the original number?", opts:["Three","Four","Two","One"], ans:"One", marks:1, time:"3 min"},
+{cat:"Reasoning", q:"F is the brother of G. G is the wife of H. H is the son of I. I is the wife of J. How is F related to J?", opts:["Father","Son's wife's brother","Son","Son's wife's father"], ans:"Son's wife's brother", marks:1, time:"3 min"},
+{cat:"General Awareness", q:"Which Indian English poet's first poetry collection titled 'The Striders', published in 1966, received a Poetry Book recommendation?", opts:["AK Ramanujan","Nissim Ezekiel","R Parthasarathy","Dom Moraes"], ans:"AK Ramanujan", marks:1, time:"3 min"},
+{cat:"Mathematics", q:"Let AB and CD be two parallel lines and PQ be a transversal such that PQ intersects AB at the point R and CD at the point S, respectively. If ∠BRP = (2x + 13)° and ∠DSP = (3x - 22)°, then find ∠CSP.", opts:["105°","95°","97°","83°"], ans:"97°", marks:1, time:"3 min"},
+{cat:"General Awareness", q:"How much international bandwidth does Airtel's 2Africa Pearls 2025 undersea cable landing system add?", opts:["Over 200 terabits per second","Over 500 terabits per second","Over 100 terabits per second","Over 50 terabits per second"], ans:"Over 100 terabits per second", marks:1, time:"3 min"},
+{cat:"General Awareness", q:"According to the Economic Survey 2023-24, how many Indians are estimated to have escaped multidimensional poverty between 2015-16 and 2019-21?", opts:["16.5 crore","13.5 crore","10 crore","20.5 crore"], ans:"13.5 crore", marks:1, time:"3 min"},
+{cat:"Reasoning", q:"This question is based on the five, three-digit numbers given below. (Left) 910 316 525 204 303 (Right) What will be the resultant if the first digit of the highest number is added to the second digit of the lowest number?", opts:["9","12","8","10"], ans:"10", marks:1, time:"3 min"},
+{cat:"Reasoning", q:"RWKA is related to TULZ in a certain way based on the English alphabetical order. In the same way, VSMY is related to XQNX. To which of the given options is ZOOW related, following the same logic?", opts:["BMPV","CLOU","ALOV","CNPW"], ans:"CNPW", marks:1, time:"3 min"},
+{cat:"Mathematics", q:"A man has to cover a distance of 753 km in 12 hours. If he covers two-third of his distance in 2/3 of the time, then what should his speed (in km/hr) be to cover the remaining distance in the time left?", opts:["41.8","31.3","52.25","62.75"], ans:"62.75", marks:1, time:"3 min"},
+{cat:"Reasoning", q:"M, N, O, P, Y and Z live on six different floors of the same building. The lowermost floor in the building is numbered 1, the floor above it, number 2 and so on till the topmost floor is numbered 6. O lives on floor numbered 4. Only two people live between O and P. Only M lives between O and N. Y lives immediately below O. Who lives on floor numbered 2?", opts:["N","Z","M","Y"], ans:"Z", marks:1, time:"3 min"},
+{cat:"Mathematics", q:"Manjit's salary is ₹10,000 per month. He spends ₹6,000 on house rent and ₹3,000 on bills, and the rest of the amount is his monthly savings. Find his savings (in ₹) in a year, if in the month of his birthday, he spent all his monthly savings on birthday celebrations.", opts:["10,000","12,000","9,000","11,000"], ans:"12,000", marks:1, time:"3 min"},
+{cat:"General Awareness", q:"When using the 'Replace' function (Ctrl + H) in MS PowerPoint, which of the following options allows users to replace only whole words and not parts of words?", opts:["Use wildcards","Sounds like (English)","Find whole words only","Match case"], ans:"Find whole words only", marks:1, time:"3 min"},
+{cat:"Mathematics", q:"Which of the following numbers is divisible by 41?", opts:["7995","7431","8537","7889"], ans:"7995", marks:1, time:"3 min"},
+{cat:"Mathematics", q:"The area of a rectangle increases by 8 m² if its length is increased by 5 m and breadth is decreased by 7 m. If the length is decreased by 5 m and breadth is increased by 8 m, then its area increases by 33 m². What is the perimeter of the original rectangle (in m)?", opts:["575","576","573","574"], ans:"574", marks:1, time:"3 min"},
+{cat:"Mathematics", q:"Mr. W travelled 370 km, 390 km and 720 km at speeds of 37 km/hr, 5 km/hr and 8 km/hr, respectively. Find his average speed in km/hr.", opts:["9 21/89","9 30/89","8 27/89","8 28/89"], ans:"8 28/89", marks:1, time:"3 min"},
+{cat:"General Awareness", q:"When and where is the second part of the Fifth Session (INC-5.2) of the Intergovernmental Negotiating Committee (INC) on plastic pollution scheduled to take place?", opts:["September 2025 in Paris, France","July 2025 in Nairobi, Kenya","August 2025 in Geneva, Switzerland","October 2025 in Ottawa, Canada"], ans:"August 2025 in Geneva, Switzerland", marks:1, time:"3 min"},
+{cat:"Mathematics", q:"Find the angle of elevation of the top of a 250√3 m high tower, from a point which is 250 m away from its foot.", opts:["75°","60°","45°","30°"], ans:"60°", marks:1, time:"3 min"},
+{cat:"Mathematics", q:"On selling a wardrobe at $3,437, the value of gain is 75% more than the value of loss incurred on selling it at $3,338. In order to gain 50%, find the selling price (in $).", opts:["5,061","5,058","5,062","5,059"], ans:"5,059", marks:1, time:"3 min"},
+{cat:"Reasoning", q:"Seven people, I, J, K, L, O, P and Q are sitting in a row, facing north. Only J sits to the left of Q. Only four people sit between J and I. Only O sits between P and K and P is not an immediate neighbour of I. Who sits at the extreme right end of the row?", opts:["O","Q","I","L"], ans:"I", marks:1, time:"3 min"},
+{cat:"Mathematics", q:"Factorize the polynomial x⁴ - 10x² + 22 into product of two quadratic polynomials.", opts:["(x² - 4 + √3)(x² - 4 - √3)","(x² - 3 + √3)(x² - 3 - √3)","(x² - 2 + √3)(x² - 2 - √3)","(x² - 5 + √3)(x² - 5 - √3)"], ans:"(x² - 5 + √3)(x² - 5 - √3)", marks:1, time:"3 min"},
+{cat:"Reasoning", q:"Select the pair that follows the same pattern as that followed by the two sets of pairs given below. Both pairs follow the same pattern. ZIL : ARO GRZ : TIA", opts:["JPE : QJT","MAP : NZJ","LOT : OKG","XMS : CNH"], ans:"LOT : OKG", marks:1, time:"3 min"},
+{cat:"General Awareness", q:"Which of the following is NOT a feature of subsistence farming?", opts:["Traditional seed varieties","Use of family labour","Use of high-end machinery","Manual agricultural practices"], ans:"Use of high-end machinery", marks:1, time:"3 min"},
+{cat:"Mathematics", q:"Piyush ranked 24th from the top and 55th from the bottom in his class. How many students are there in his class?", opts:["79","77","78","76"], ans:"78", marks:1, time:"3 min"},
+{cat:"General Awareness", q:"Who among the following won the 2024 Booker Prize, and what is the title of the winning novel?", opts:["Rachel Kushner - Creation Lake","Samantha Harvey - Orbital","Percival Everett - James","Anne Michaels - Held"], ans:"Anne Michaels - Held", marks:1, time:"3 min"},
+{cat:"Mathematics", q:"Pipe A can fill a tank in 18 minutes, while pipe B can empty the completely filled tank in 27 minutes. Initially, pipe A is opened and after 6 minutes pipe B is also opened. In how much time (in minutes) will the remaining tank be filled completely?", opts:["36","32","35","21"], ans:"36", marks:1, time:"3 min"},
+{cat:"Reasoning", q:"Read the given statements and conclusions carefully. Assuming that the information given in the statements is true, even if it appears to be at variance with commonly known facts, decide which of the given conclusions logically follow(s) from the statements. Statements: All crabs are ties. Some ties are hooves. Some hooves are vents. Conclusions: (I): Some vents are crabs. (II): Some hooves are crabs.", opts:["Only conclusion (II) follows.","Both conclusions (I) and (II) follow.","Neither conclusion (I) nor (II) follows.","Only conclusion (I) follows."], ans:"Neither conclusion (I) nor (II) follows.", marks:1, time:"3 min"},
+{cat:"General Awareness", q:"Which of the following is not a surrounding feature of the Thar Desert?", opts:["Aravalli Range","Vindhya Hills","Rann of Kachchh","Indus River Plain"], ans:"Vindhya Hills", marks:1, time:"3 min"},
+{cat:"Mathematics", q:"2% of 50% of a number is what percentage of that number?", opts:["100%","0.1%","1%","52%"], ans:"1%", marks:1, time:"3 min"},
+{cat:"General Awareness", q:"Who among the following was awarded the Olympic Order by the International Olympic Committee (IOC) in July 2024?", opts:["Abhinav Bindra","Manu Bhaker","Neeraj Chopra","Mary Kom"], ans:"Mary Kom", marks:1, time:"3 min"},
+{cat:"General Awareness", q:"In December 2024, PM Modi made a historic visit to which Gulf country, marking the first such visit by an Indian Prime Minister in 43 years?", opts:["Kuwait","Oman","Bahrain","Qatar"], ans:"Qatar", marks:1, time:"3 min"},
+{cat:"General Awareness", q:"What is the difference between dragging text with the mouse (left-click) and Ctrl + dragging text in MS Word 365?", opts:["Both actions move the text.","Dragging moves the text; Ctrl + dragging copies it.","Dragging deletes the text; Ctrl + dragging pastes it.","Ctrl + dragging changes the font style."], ans:"Dragging moves the text; Ctrl + dragging copies it.", marks:1, time:"3 min"},
+{cat:"Mathematics", q:"If '-' means '+', '+' means 'x', '-' means '+' and '+' means '-', then what will come in place of the question mark (?) in the following equation? 1568 - 16 + 4 ÷ 5 × 22 = ?", opts:["492","294","100","113"], ans:"113", marks:1, time:"3 min"},
+{cat:"General Awareness", q:"Which among the following significant changes was introduced in the Waqf (Amendment) Act, 2025?", opts:["Mandating representation of at least two Muslim women on Waqf Boards","Privatisation of Waqf properties","Abolition of the Central Waqf Council","Exemption of Waqf properties from legal scrutiny"], ans:"Mandating representation of at least two Muslim women on Waqf Boards", marks:1, time:"3 min"},
+{cat:"Mathematics", q:"What will come in place of the question mark (?) in the following equation, if '+' and '-' are interchanged and '×' and '÷' are interchanged? 52 ÷ 15 - 189 × 9 + 117 = ?", opts:["664","672","688","678"], ans:"664", marks:1, time:"3 min"},
+{cat:"Reasoning", q:"Which of the following letter-clusters should replace # and % so that the pattern and relationship followed between the letter-cluster pair on the left side of :: is the same as that on the right side of ::? # : RND :: QRX : %", opts:["# = MQB, % = FFT","# = MRQ, % = HHN","# = PQC, % = YYP","# = PMB, % = SSZ"], ans:"# = PMB, % = SSZ", marks:1, time:"3 min"},
+{cat:"Reasoning", q:"What should come in place of the question mark (?) in the given series? 801 800 797 792 785 ?", opts:["773","775","776","774"], ans:"776", marks:1, time:"3 min"},
+{cat:"Mathematics", q:"The mode of the observations 4, 3, 8, 7, 3, 7, 3, 1, 1, 3, 8, 3, 3, 5 and 3 is:", opts:["4","7","3","8"], ans:"3", marks:1, time:"3 min"},
+{cat:"General Awareness", q:"Whom did Chandragupta II marry after defeating the Saka king?", opts:["Kubernaga","Kumarani","Parbatidevi","Ruprekha"], ans:"Kubernaga", marks:1, time:"3 min"},
+{cat:"Mathematics", q:"The mode and median of a data set is 89.7 and 32, respectively. What is the mean of the data set? (Use empirical formula.)", opts:["2.6","11.26","5.9","3.15"], ans:"3.15", marks:1, time:"3 min"},
+{cat:"General Awareness", q:"What is the title of the first poetry collection by Nissim Ezekiel, one of the most celebrated poets in Indian English Literature?", opts:["Echoes of the Soul","Shadows and Dreams","The Unfinished Verse","A Time of Change"], ans:"A Time of Change", marks:1, time:"3 min"},
+{cat:"General Awareness", q:"Which initiative was launched on 25 September 2014 to facilitate investment, foster innovation, build best in class infrastructure and make India a hub for manufacturing, design and innovation?", opts:["Make in India initiative","Industrial Corridor Development Programme","Start Up India initiative","Stand Up India Initiative"], ans:"Make in India initiative", marks:1, time:"3 min"},
+{cat:"General Awareness", q:"As per the NFHS-5 (2019-21), what is the approximate percentage of households in India with access to improved sanitation facilities?", opts:["70%","85%","65%","55%"], ans:"70%", marks:1, time:"3 min"},
+{cat:"General Awareness", q:"What is the main goal of the PM Gati Shakti initiative?", opts:["Strengthen healthcare facilities","Improve transportation and logistics","Increase agricultural productivity","Enhance digital infrastructure"], ans:"Improve transportation and logistics", marks:1, time:"3 min"}
+
+  
+];
+// ---------------- QUIZ LOGIC ----------------
+// STATE
+let currentIndex = 0;
+let responses = new Array(quiz.length).fill(null);
+let studentName = "";
+let timerSec = 80*60;
+let timerInterval = null;
+let examStarted = false;
+
+const startCard=document.getElementById('startCard'),
+      quizCard=document.getElementById('quizCard'),
+      resultCard=document.getElementById('resultCard'),
+      qHeading=document.getElementById('qHeading'),
+      qCategory=document.getElementById('qCategory'),
+      qbox=document.getElementById('qbox'),
+      navNumbers=document.getElementById('navNumbers'),
+      timerTop=document.getElementById('timerTop'),
+      timerMain=document.getElementById('timer');
+
+function escapeHtml(str){return String(str||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]))}
+
+function buildNav(){
+  navNumbers.innerHTML='';
+  quiz.forEach((_,i)=>{
+    const btn=document.createElement('button');
+    btn.type = "button"; // ✅ prevents form submission
+    btn.textContent = i + 1;
+    btn.dataset.idx = i;
+    btn.onclick = () => {
+      saveCurrent();
+      currentIndex = i;
+      renderQuestion();
+    };
+    navNumbers.appendChild(btn);
+  });
+}
+
+
+function renderQuestion(){
+  const item=quiz[currentIndex];
+  qHeading.textContent=`Question ${currentIndex+1}`;
+  qCategory.textContent=item.cat;
+  let html=`<div class="qtext">${item.q}</div>`;
+  item.opts.forEach((opt,i)=>{
+    const checked=(responses[currentIndex]===opt)?'checked':'';
+    html+=`<label class="opt"><input type="radio" name="opt" value="${escapeHtml(opt)}" ${checked}/> ${String.fromCharCode(65+i)}. ${opt}</label>`;
+  });
+  qbox.innerHTML=html;
+  Array.from(navNumbers.children).forEach((b,idx)=>b.classList.toggle('current',idx===currentIndex));
+}
+
+function saveCurrent(){
+  const sel=qbox.querySelector('input[name="opt"]:checked');
+  if(sel) responses[currentIndex]=sel.value;
+}
+
+function formatTime(s){const m=Math.floor(s/60),sec=s%60;return `${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;}
+
+function startExam(){
+  const nameInput=document.getElementById('studentName').value.trim();
+  if(!nameInput){alert('Enter your name');return;}
+  studentName=nameInput;
+  openFullscreen();
+  startCore();
+}
+function startDemo(){
+  studentName=document.getElementById('studentName').value.trim()||'Demo Student';
+  startCore(true);
+}
+function startCore(demo=false){
+  examStarted=true;
+  startCard.style.display='none'; quizCard.style.display='block';
+  timerMain.style.display=demo?'none':'block'; buildNav(); renderQuestion();
+  timerInterval=setInterval(()=>{
+    timerSec--; timerTop.textContent=formatTime(timerSec); timerMain.textContent=formatTime(timerSec);
+    if(timerSec<=0){clearInterval(timerInterval); alert('Time up'); finishExam();}
+  },1000);
+}
+function openFullscreen(){const el=document.documentElement; if(el.requestFullscreen) el.requestFullscreen();}
+function closeFullscreen(){if(document.exitFullscreen) document.exitFullscreen();}
+document.addEventListener('visibilitychange',()=>{if(examStarted&&document.hidden){alert('Tab switched. Auto-submit.');finishExam();}});
+document.addEventListener('fullscreenchange',()=>{if(examStarted&&!document.fullscreenElement){alert('Exited fullscreen. Auto-submit.');finishExam();}});
+
+document.getElementById('startBtn').addEventListener('click',e=>{e.preventDefault();startExam();});
+document.getElementById('demoBtn').addEventListener('click',e=>{e.preventDefault();startDemo();});
+document.getElementById('prevBtn').addEventListener('click',()=>{saveCurrent();if(currentIndex>0)currentIndex--;renderQuestion();});
+document.getElementById('nextBtn').addEventListener('click',()=>{saveCurrent();if(currentIndex<quiz.length-1)currentIndex++;renderQuestion();});
+document.getElementById('submitBtn').addEventListener('click',()=>{if(confirm('Submit exam?'))finishExam();});
+
+function finishExam(){
+  if(!examStarted) return;
+  examStarted = false;
+  clearInterval(timerInterval);
+  saveCurrent();
+
+  let score = 0;
+  let max = 0;
+  const details = [];
+
+  quiz.forEach((it, i) => {
+    max += it.marks;
+    let got = 0;
+
+    // responses[i] is null if unanswered — treat as unattempted
+    if (responses[i]) {
+      if (responses[i] === it.ans) {
+        got = it.marks;           // correct
+      } else {
+        got = - (it.marks / 3);   // wrong: -1/3 of marks
+      }
+    } // else got stays 0 for unattempted
+
+    score += got;
+
+    details.push({
+      q: it.q,
+      given: responses[i] || '(no answer)',
+      correct: it.ans,
+      marks: got
+    });
+  });
+
+  // optional: round score to 2 decimals for display
+  const displayScore = Math.round((score + Number.EPSILON) * 100) / 100;
+
+  quizCard.style.display = 'none';
+  resultCard.style.display = 'block';
+  document.getElementById('resultSummary').innerHTML =
+    `<p><strong>Name:</strong> ${escapeHtml(studentName)}<br><strong>Score:</strong> ${displayScore}/${max}</p>`;
+
+  const d = document.getElementById('detailSummary');
+  d.innerHTML = '';
+  details.forEach((r, i) => {
+    const el = document.createElement('div');
+    el.innerHTML = `<strong>Q${i+1}:</strong> ${r.q}<br>Your: ${escapeHtml(String(r.given))} | Correct: ${escapeHtml(String(r.correct))} | Marks: ${r.marks}`;
+    d.appendChild(el);
+  });
+
+  // --- send result to Google Script ---
+  fetch("https://script.google.com/macros/s/AKfycbym7870t9FYTGPZqgXjxzS2WdL4ye4uqfudkpfVQHAAJUUKn6DPt6RQRCIvlyHfJmSk/exec", {
+    method: "POST",
+    body: new URLSearchParams({
+      name: studentName,
+      score: displayScore,
+      total: max,
+      answers: JSON.stringify(details)
+    })
+  })
+  .then(()=>console.log("Result sent"))
+  .catch(err=>console.error("Error sending result:",err));
+
+  try{ closeFullscreen(); } catch(e) {}
+}
+
+</script>
+</body>
+</html>
