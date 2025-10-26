@@ -1,1 +1,368 @@
 
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>RRB Section Control — Full-Length Test (100 Qs)</title>
+<style>
+  :root{--brand:#2563eb;--danger:#b91c1c;--muted:#6b7280}
+  body{font-family:system-ui,-apple-system,'Segoe UI',Roboto,Arial; background:#f8fafc; margin:0}
+  .wrap{max-width:1100px;margin:18px auto;padding:18px}
+  .card{background:#fff;border-radius:10px;padding:18px;box-shadow:0 6px 18px rgba(2,6,23,0.06)}
+  header{display:flex;justify-content:space-between;align-items:center;gap:12px}
+  h1{font-size:20px;margin:0}
+  #timer{font-weight:700;color:var(--danger);font-size:16px}
+  .intro ul{margin-top:6px}
+  input[type="text"]{width:100%;padding:8px;border-radius:6px;border:1px solid #e5e7eb}
+  .controls{display:flex;gap:8px;align-items:center;margin-top:12px}
+  button{background:var(--brand);color:#fff;padding:9px 12px;border-radius:8px;border:none;cursor:pointer}
+  button.secondary{background:#64748b}
+  .qbox{margin-top:14px}
+  .qtext{font-weight:600;margin-bottom:10px}
+  .opts{display:block;margin-bottom:6px}
+  label.opt{display:block;padding:10px;border-radius:8px;border:1px solid #e6e6e6;margin-bottom:8px;cursor:pointer;background:#fff}
+  label.opt input{margin-right:8px}
+  .nav-numbers{display:flex;flex-wrap:wrap;gap:6px;padding:10px 0}
+  .nav-numbers button{width:40px;height:36px;border-radius:6px;padding:0}
+  .nav-numbers button.current{background:#60a5fa}
+  .result{margin-top:12px}
+  .summary{margin-top:12px;max-height:320px;overflow:auto;padding:8px;border-radius:8px;border:1px solid #e6e6e6}
+  .footer{margin-top:14px;color:var(--muted);font-size:13px}
+</style>
+</head>
+<body>
+<form id="quizForm">
+<div class="wrap">
+  <!-- START CARD -->
+  <div class="card" id="startCard">
+    <header>
+      <div>
+        <h1>RRB Section Control — Full-Length Test 5</h1>
+        <div style="color:var(--muted);margin-top:6px">100 Questions | Time:80 minutes | Each question = 1 mark | –⅓ negative for wrong answer</div>
+      </div>
+      <div style="text-align:right">
+        <div id="timer" style="display:none">80:00</div>
+        <div style="font-size:12px;color:var(--muted)">Time Remaining</div>
+      </div>
+    </header>
+
+    <div class="intro" style="margin-top:14px">
+      <p><strong>Instructions:</strong></p>
+      <ul>
+        <li>Enter your name and press <strong>Start Exam</strong>. The exam will go full-screen and the 80-minute timer will begin.</li>
+        <li>Do not exit full-screen or switch tabs — doing so will auto-submit your exam.</li>
+        <li>You may navigate using the numbered buttons, and submit when done. The timer will auto-submit when time ends.</li>
+      </ul>
+
+      <p><label>Student name (required)</label>
+      <input type="text" id="studentName" placeholder="Enter your full name" /></p>
+
+      <div class="controls">
+        <button id="startBtn">Start Exam</button>
+        <button class="secondary" id="demoBtn">Demo (No Fullscreen)</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- QUIZ CARD -->
+  <div class="card" id="quizCard" style="display:none;margin-top:14px">
+    <header style="align-items:flex-start">
+      <div>
+        <h2 id="qHeading">Question 1</h2>
+        <div style="color:var(--muted)" id="qCategory"></div>
+      </div>
+      <div style="text-align:right">
+        <div id="timerTop" style="font-weight:700;color:var(--danger);font-size:18px">80:00</div>
+        <div style="font-size:12px;color:var(--muted)">Time Remaining</div>
+      </div>
+    </header>
+
+    <div class="qbox" id="qbox"></div>
+    <div class="nav-numbers" id="navNumbers"></div>
+
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px">
+      <div>
+        <button id="prevBtn" class="secondary" type="button">◀ Prev</button>
+        <button id="nextBtn" type="button">Next ▶</button>
+      </div>
+      <div>
+        <button id="submitBtn" style="background:#16a34a" type="button">Submit Exam</button>
+      </div>
+    </div>
+
+    <div class="footer">You must remain in full-screen mode. Switching tabs or exiting full-screen will auto-submit.</div>
+  </div>
+
+  <!-- RESULT CARD -->
+  <div class="card" id="resultCard" style="display:none;margin-top:14px">
+    <h2>Exam Submitted</h2>
+    <div id="resultSummary" class="result"></div>
+    <div class="summary" id="detailSummary"></div>
+  </div>
+</div>
+</form>
+
+<script>
+// ---------------- QUIZ LOGIC ----------------
+const quiz = [
+{cat:"General Awareness", q:"In which year did Bakshi Jagabandhu lead the Paika Rebellion to protest against the British land revenue policy?", opts:["1785","1717","1806","1817"], ans:"1817", marks:1, time:"3 min"},
+{cat:"Economy", q:"What was the overall unemployment rate in India as reported in the 6th Annual Employment-Unemployment Survey conducted by the Labour Bureau?", opts:["5.4%","6.1%","4.9%","7.3%"], ans:"5.4%", marks:1, time:"3 min"},
+{cat:"Reasoning", q:"If ‘+’ means ‘−’, ‘−’ means ‘×’, ‘×’ means ‘÷’ and ‘÷’ means ‘+’, then what will come in place of the question mark (?) in the equation 32 ÷ 14 + 16 – 8 × 4 = ?", opts:["14","18","16","22"], ans:"18", marks:1, time:"3 min"},
+{cat:"Current Affairs", q:"Who among the following assumed charge of the Comptroller General of India in November 2024?", opts:["K Sanjay Murthy","Tuhin Kant Pandey","Manish Singhal","Arunish Chawla"], ans:"Arunish Chawla", marks:1, time:"3 min"},
+{cat:"Computer Awareness", q:"Which of the following is an example of an operating system commonly used on desktop computers?", opts:["Microsoft Word","Adobe Photoshop","Windows 10","Google Chrome"], ans:"Windows 10", marks:1, time:"3 min"},
+{cat:"Reasoning", q:"Refer to the following number and symbol series: # * £ 3 9 € # % £ 1 % £ 8 8 1 4 9 % 5 8 & 7. How many numbers are there each immediately preceded and followed by a symbol?", opts:["2","3","1","4"], ans:"3", marks:1, time:"3 min"},
+{cat:"Geography", q:"The 24° latitude passes closest to which Indian state’s capital?", opts:["Patna","Bhopal","Raipur","Dispur"], ans:"Bhopal", marks:1, time:"3 min"},
+{cat:"Polity", q:"Which urban local self-government body manages small towns with limited municipal functions like street lighting and drainage?", opts:["Municipal Corporation","Port Trust","Town Area Committee","Special Purpose Agencies"], ans:"Town Area Committee", marks:1, time:"3 min"},
+{cat:"Mathematics", q:"Find the value of K if the quadratic equations 2x² + Kx + 8 = 0 and 3x² + 4x + 12 = 0 have both roots common.", opts:["6","8","4","12"], ans:"6", marks:1, time:"3 min"},
+{cat:"Reasoning", q:"If ‘+’ and ‘−’ are interchanged and ‘×’ and ‘÷’ are interchanged, what will come in place of the question mark in 38 ÷ 21 + 436 × 4 − 73 = ?", opts:["761","762","764","763"], ans:"763", marks:1, time:"3 min"},
+{cat:"Reasoning", q:"Seven boxes A, B, C, D, E, F, G are kept one over the other. No box is above F. Only three boxes are between F and B. One box between G and D. D is immediately above B. Four boxes between G and C. A is somewhere above E. How many boxes are below D?", opts:["1","4","3","2"], ans:"3", marks:1, time:"3 min"},
+{cat:"Social Indices", q:"In the Gender Inequality Index (GII) 2022, what rank did India achieve among 193 countries?", opts:["108","115","100","122"], ans:"108", marks:1, time:"3 min"},
+{cat:"Biology", q:"Which structural-functional issue in a plant root would hinder gas exchange but not significantly impact water absorption?", opts:["Endodermal cells without suberin","Disrupted stomatal apparatus","Absence of root hairs due to epidermal deformation","Mutated epiblema cells lacking vacuoles"], ans:"Absence of root hairs due to epidermal deformation", marks:1, time:"3 min"},
+{cat:"Chemistry", q:"Which of the following is an example of a chemical change?", opts:["Burning wood","Cutting paper","Boiling water","Melting ice"], ans:"Burning wood", marks:1, time:"3 min"},
+{cat:"Computer Awareness", q:"When navigating through options in a dialog box or menu using the keyboard, what is the primary function of the Tab key?", opts:["Go back","Close menu","Move focus to next option","Select highlighted option"], ans:"Move focus to next option", marks:1, time:"3 min"},
+{cat:"Mathematics", q:"The larger of two supplementary angles is 28° more than the smaller one. Find the smaller angle.", opts:["76°","79°","80°","84°"], ans:"76°", marks:1, time:"3 min"},
+{cat:"History", q:"What is the main focus of the Sangam anthologies Purananuru and Patirruppattu?", opts:["Heroism and praise of kings","Love and emotions","Nature and landscapes","Religious themes"], ans:"Heroism and praise of kings", marks:1, time:"3 min"},
+{cat:"Art & Architecture", q:"In South Indian temple architecture, what is the name of the stepped or pyramidal structure built above the sanctum?", opts:["Jagati","Mandapa","Vimana","Adhisthana"], ans:"Vimana", marks:1, time:"3 min"},
+{cat:"History", q:"The term 'Bhukti' in post-Gupta polity referred to:", opts:["Tax","Officer","King","Province"], ans:"Province", marks:1, time:"3 min"},
+{cat:"Geography", q:"From which state to which state do the Eastern Coastal Plains of India extend?", opts:["Gujarat–Kerala","West Bengal–Tamil Nadu","Maharashtra–Andhra Pradesh","Odisha–Karnataka"], ans:"West Bengal–Tamil Nadu", marks:1, time:"3 min"},
+{cat:"Reasoning", q:"Sundar starts from point A and drives 12 km east, turns left 9 km, left 13 km, left 11 km, and final left 1 km to P. How far and which direction must he drive to reach A?", opts:["2 km south","1 km north","2 km north","1 km south"], ans:"2 km north", marks:1, time:"3 min"},
+{cat:"Arithmetic", q:"Salil’s salary was reduced 15% then raised 10%. What percent lower is final salary than initial?", opts:["10%","1.5%","6.5%","15%"], ans:"6.5%", marks:1, time:"3 min"},
+{cat:"Mathematics", q:"If 260 is the mean proportional between x and 338, find x.", opts:["200","198","199","201"], ans:"200", marks:1, time:"3 min"},
+{cat:"Computer Awareness", q:"Which of the following components is NOT part of CPU?", opts:["Arithmetic Logic Unit (ALU)","Graphic Card","Control Unit (CU)","Registers"], ans:"Graphic Card", marks:1, time:"3 min"},
+{cat:"Statistics", q:"A class of 30 students: 12 average 60, rest 62. What is overall average?", opts:["61.2","62.2","60.2","59.2"], ans:"61.2", marks:1, time:"3 min"},
+{cat:"Reasoning", q:"How many chefs are also teachers but not lawyers according to the Venn diagram?", opts:["8","9","5","7"], ans:"8", marks:1, time:"3 min"},
+{cat:"Mathematics", q:"The average of first 14 whole numbers is:", opts:["6.5","7.5","7","5.5"], ans:"6.5", marks:1, time:"3 min"},
+{cat:"Reasoning", q:"Which of the following letter-clusters completes the analogy # : VEC :: BNW : %?", opts:["#=XHA,%=ZKY","#=ZKY,%=FTS","#=FTS,%=XHA","#=DQU,%=XHA"], ans:"#=FTS,%=XHA", marks:1, time:"3 min"},
+{cat:"Geography", q:"Which of the following Indian states does NOT have a coastline?", opts:["Gujarat","Rajasthan","Andhra Pradesh","Odisha"], ans:"Rajasthan", marks:1, time:"3 min"},
+{cat:"Mensuration", q:"Find the surface area of a sphere whose diameter = 98 cm.", opts:["29256 cm²","39204 cm²","30184 cm²","33284 cm²"], ans:"30184 cm²", marks:1, time:"3 min"},
+{cat:"Arithmetic", q:"Rahul’s age is thrice his daughter’s. After 8 years, he will be 5 years more than twice her age. Find Rahul’s present age.", opts:["36 years","30 years","33 years","39 years"], ans:"39 years", marks:1, time:"3 min"},
+{cat:"Reasoning", q:"In a row of 73 students facing north, Gita is 16th from left. Sunita is 21st to the right of Gita. What is Sunita’s position from right end?", opts:["31st","28th","22nd","37th"], ans:"37th", marks:1, time:"3 min"},
+{cat:"Current Affairs", q:"In February 2025, Muthoot Finance received RBI approval to open how many new branches across India?", opts:["115","110","120","125"], ans:"120", marks:1, time:"3 min"},
+{cat:"Science & Space", q:"What is the primary objective of the Chandra's Surface Thermophysical Experiment (ChaSTE), 2025, payload?", opts:["To measure the vertical temperature profile of lunar regolith","To study the Moon's magnetic field","To measure the Moon's atmospheric pressure","To assess the Moon's geological composition"], ans:"To measure the vertical temperature profile of lunar regolith", marks:1, time:"3 min"},
+{cat:"Government Schemes", q:"How many cities were initially included under the Smart Cities Mission launched by the Government of India?", opts:["50","100","200","150"], ans:"100", marks:1, time:"3 min"},
+{cat:"Work & Time", q:"Varun and Ashish together can paint a hall in 3 days. Varun alone can paint it in 7 days. In how many days can Ashish alone paint 4 such halls?", opts:["5.25","6.25","22","21"], ans:"21", marks:1, time:"3 min"},
+{cat:"Boats & Streams", q:"If Ishwar covers 721 km in 42 hours against the stream and 15 hours with the stream, find the speed of the stream.", opts:["7.38 km/h","19.25 km/h","22.48 km/h","15.45 km/h"], ans:"7.38 km/h", marks:1, time:"3 min"},
+{cat:"Sports", q:"Who won the Women's Premier League (WPL) 2025 title?", opts:["Chennai Super Kings","Mumbai Indians","Royal Challengers Bangalore","Delhi Capitals"], ans:"Royal Challengers Bangalore", marks:1, time:"3 min"},
+{cat:"History", q:"The Takht-i-Bahi inscription refers to which Parthian ruler?", opts:["Gondophernes","Menander","Azes","Rudradaman"], ans:"Gondophernes", marks:1, time:"3 min"},
+{cat:"Polity", q:"Which Article of the Directive Principles of State Policy was added by the 97th Constitutional Amendment Act of India?", opts:["Article 39A","Article 43B","Article 48A","Article 43A"], ans:"Article 43B", marks:1, time:"3 min"},
+{cat:"Reasoning", q:"Three of the following letter-cluster pairs are alike. Which one does NOT belong to the group?", opts:["HL–JN","MU–KH","NR–PT","SW–UY"], ans:"MU–KH", marks:1, time:"3 min"},
+{cat:"History", q:"Who founded the Vedanta College in Calcutta to promote both Indian and Western learning?", opts:["Rammohan Roy","Debendranath Tagore","Swami Vivekananda","Ishwar Chandra Vidyasagar"], ans:"Rammohan Roy", marks:1, time:"3 min"},
+{cat:"Reasoning", q:"Which of the following completes the analogy # : JLH :: IKG : % ?", opts:["#=FJH,%=MHU","#=DEG,%=NIU","#=EGC,%=NPL","#=FDG,%=MLG"], ans:"#=FJH,%=MHU", marks:1, time:"3 min"},
+{cat:"Politics", q:"Which combination represents the party and constituency of the Chief Minister of Jharkhand after 2024 elections?", opts:["JMM, Barhait","JMM, Khunti","BJP, Jamshedpur East","BJP, Dhanwar"], ans:"JMM, Barhait", marks:1, time:"3 min"},
+{cat:"Arithmetic", q:"Kiran spends 45% of his income. If he saves ₹66,000, what is his income?", opts:["₹1,21,000","₹1,19,000","₹29,700","₹1,20,000"], ans:"₹1,20,000", marks:1, time:"3 min"},
+{cat:"Current Affairs", q:"In November 2024, which day was celebrated to honour India’s contribution to the dairy revolution?", opts:["National Dairy Day","White Revolution Day","National Milk Day","Milk Production Day"], ans:"National Milk Day", marks:1, time:"3 min"},
+{cat:"Profit & Loss", q:"A dealer sells two dryers at ₹63,000 each, earning 5% profit on one and losing 30% on the other. Find his overall loss percentage.", opts:["14%","17%","15%","16%"], ans:"15%", marks:1, time:"3 min"},
+{cat:"Simple & Compound Interest", q:"The difference between compound and simple interest for 2 years at 16% per annum is ₹797. Find the principal.", opts:["₹31,113","₹31,130","₹31,137","₹31,133"], ans:"₹31,133", marks:1, time:"3 min"},
+{cat:"Reasoning", q:"If 2 is added to each even and odd digit of 5217643, find the sum of the first and last digits of the new number.", opts:["10","11","12","13"], ans:"12", marks:1, time:"3 min"},
+{cat:"Coding-Decoding", q:"Using given code rules, find the code for the group 5 & 3 @ 7 % 2.", opts:["© M D Z W P ©","© M D Z P W ©","© D M Z W P ©","© M D W Z P ©"], ans:"© M D Z W P ©", marks:1, time:"3 min"},
+{cat:"Economy", q:"The Indian telecom sector was liberalised under which year's Telecom Policy?", opts:["1997","1999","1994","2002"], ans:"1999", marks:1, time:"3 min"},
+{cat:"Algebra", q:"When x is added to each of 30, 15, 21 and 11, the numbers are in proportion. If 6x : y :: y : (3x–9), find y.", opts:["18","24","10","37"], ans:"24", marks:1, time:"3 min"},
+{cat:"Mensuration", q:"In quadrilateral ABCD, AB=17 cm, BC=8 cm, CD=9 cm, AD=12 cm, AC=15 cm. Find its area.", opts:["105 cm²","114 cm²","118 cm²","121 cm²"], ans:"118 cm²", marks:1, time:"3 min"},
+{cat:"Simple Interest", q:"Find the duration (in years) for ₹1,200 to amount to ₹2,280 at 4% simple interest per annum.", opts:["22.5","21.5","23.5","24.5"], ans:"22.5", marks:1, time:"3 min"},
+{cat:"Geography", q:"The Sabarmati river originates from which place?", opts:["Aravalli Hills, Rajasthan","Western Ghats, Maharashtra","Satpura Range, Gujarat","Vindhya Range, Madhya Pradesh"], ans:"Aravalli Hills, Rajasthan", marks:1, time:"3 min"},
+{cat:"Agriculture & Technology", q:"Which statements are correct about the Digital Agriculture Mission 2024?", opts:["Only 2 and 3","1, 2 and 3","Only 1 and 2","Only 1 and 3"], ans:"Only 1 and 3", marks:1, time:"3 min"},
+{cat:"Reasoning", q:"Find the missing term in the series: 701 700 697 692 685 ?", opts:["675","673","671","676"], ans:"673", marks:1, time:"3 min"},
+{cat:"Computer Awareness", q:"What is the primary purpose of virtual memory in a computer?", opts:["Provide backup","Increase storage capacity","Extend CACHE memory","Extend RAM using disk space"], ans:"Extend RAM using disk space", marks:1, time:"3 min"},
+{cat:"Profit & Loss", q:"A vendor bought lemons at 7 for ₹1. How many lemons must he sell for ₹1 to gain 75%?", opts:["8","4","5","6"], ans:"4", marks:1, time:"3 min"},
+{cat:"Chemistry", q:"Which of the following solutions is slightly acidic due to hydrolysis?", opts:["NH₄CH₃COO","NH₄Cl","Na₂CO₃","CH₃COONa"], ans:"NH₄Cl", marks:1, time:"3 min"},
+{cat:"Reasoning", q:"Find the missing term: OKI 4, QLG 8, SME 12, UNC 16, ?", opts:["WOA 24","WOA 20","WOV 20","VOW 16"], ans:"WOA 20", marks:1, time:"3 min"},
+{cat:"Geometry", q:"The larger of two supplementary angles is 50° more than the smaller. Find the smaller angle.", opts:["65°","67°","56°","75°"], ans:"65°", marks:1, time:"3 min"},
+{cat:"Reasoning", q:"Which of the following completes the analogy # : LHM :: OKP : % ?", opts:["#=FDH,%=NHU","#=UPS,%=RPV","#=DCV,%=NHY","#=GCH,%=TPU"], ans:"#=FDH,%=NHU", marks:1, time:"3 min"},
+{cat:"Proportion", q:"If 7.5 : 19.5 :: 16 : x, find x.", opts:["39.4","41.1","41.6","45.1"], ans:"41.6", marks:1, time:"3 min"},
+{cat:"Economy", q:"According to Economic Survey 2024-25, what is India’s R&D expenditure as % of GDP?", opts:["0.45%","1.15%","0.64%","1.28%"], ans:"0.64%", marks:1, time:"3 min"},
+{cat:"Reasoning", q:"Seven people N,O,P,Q,R,S,T are sitting in a line facing north. Given conditions, how many people are between O and N?", opts:["Two","Zero","Four","One"], ans:"Four", marks:1, time:"3 min"},
+{cat:"Economy", q:"According to the Economic Survey 2024–25, what is the current expenditure on Research and Development (R&D) as a percentage of India’s GDP?", opts:["0.45%","1.15%","0.64%","1.28%"], ans:"0.64%", marks:1, time:"3 min"},
+{cat:"Reasoning", q:"Seven people, N, O, P, Q, R, S and T, are sitting in a straight line facing north. T is sitting at one of the ends of the line. Only two people are sitting to the left of R. P is sitting to the immediate right of R and immediate left of S. Q is sitting to the immediate left of O. Q does not sit at an extreme end of the line. How many people are sitting between O and N?", opts:["Two","Zero","Four","One"], ans:"Four", marks:1, time:"3 min"},
+{cat:"Arithmetic", q:"What will come in place of the question mark (?) in the equation if '+' and '–' are interchanged and '×' and '÷' are interchanged? 1125 × 45 ÷ 39 – 17 + 19 = ?", opts:["992","973","379","975"], ans:"975", marks:1, time:"3 min"},
+{cat:"Reasoning", q:"This question is based on the five, three-digit numbers 614, 457, 249, 625, 150. What will be the resultant if the second digit of the highest number is subtracted from the second digit of the lowest number?", opts:["4","3","6","2"], ans:"3", marks:1, time:"3 min"},
+{cat:"Coding-Decoding", q:"A group of numbers and symbols is coded using letter codes. What will be the code for the group 7 2 4 @ 5?", opts:["PBBFJ","JTBFP","JBBFP","PTBFJ"], ans:"PTBFJ", marks:1, time:"3 min"},
+{cat:"Reasoning", q:"A, B, C, D, E and F live on six different floors of a building. A lives on a prime-numbered floor. The product of floors on which A and E live is 3. Only 2 people live above B. F lives immediately below C. How many people live between D and F?", opts:["Three","Four","One","Two"], ans:"Two", marks:1, time:"3 min"},
+{cat:"Reasoning", q:"This question is based on five, three-digit numbers: 401, 418, 733, 283, 902. What will be the resultant if the second digit of the highest number is added to the third digit of the lowest number?", opts:["3","6","4","2"], ans:"4", marks:1, time:"3 min"},
+{cat:"Environment", q:"How many countries were evaluated in the Climate Change Performance Index 2025?", opts:["73","83","93","63"], ans:"93", marks:1, time:"3 min"},
+{cat:"Direction Test", q:"Fardeen starts from point A and drives 13 km west, takes turns as per given conditions and stops at point P. How far and in which direction should he drive to reach A?", opts:["10 km north","15 km south","12 km south","15 km north"], ans:"15 km north", marks:1, time:"3 min"},
+{cat:"Simplification", q:"Simplify 127 - 7 × (17 + 6) + 93.", opts:["59","57","62","51"], ans:"59", marks:1, time:"3 min"},
+{cat:"Pipes & Cisterns", q:"Pipe A can fill a tank in 18 min, while B can empty it in 20 min. A is opened first and B after 6 min. In how much time will the tank be full?", opts:["120","137","107","127"], ans:"127", marks:1, time:"3 min"},
+{cat:"International Relations", q:"As of April 2025, what percentage of the India–UK Free Trade Agreement (FTA) has been finalised?", opts:["90%","80%","70%","95%"], ans:"80%", marks:1, time:"3 min"},
+{cat:"Algebra", q:"Simplify (2x − 5y)² + (5x + 2y)² + (2x + 5y)(2x − 5y).", opts:["34x² − 4y²","−34x² + 4y²","−33x² − 4y²","33x² + 4y²"], ans:"33x² + 4y²", marks:1, time:"3 min"},
+{cat:"Current Affairs", q:"Which country assumed the Chairmanship of the Bay of Bengal Inter-Governmental Organisation (BOBP-IGO) in 2025?", opts:["India","Myanmar","Sri Lanka","Bangladesh"], ans:"India", marks:1, time:"3 min"},
+{cat:"Polity", q:"The Supreme Court can issue writs under Article 32 only for which specific purpose?", opts:["Resolve disputes between states","Enforce Directive Principles","Protect Fundamental Rights","Review statutory tribunal decisions"], ans:"Protect Fundamental Rights", marks:1, time:"3 min"},
+{cat:"Polity", q:"What is the key difference between the Supreme Court’s original jurisdiction in federal disputes versus its writ jurisdiction?", opts:["Federal jurisdiction is exclusive to SC, writ jurisdiction is concurrent with High Courts","Federal disputes can be suo moto, writs require petition","Federal applies to civil, writ to criminal","Federal is advisory, writ is binding"], ans:"Federal jurisdiction is exclusive to SC, writ jurisdiction is concurrent with High Courts", marks:1, time:"3 min"},
+{cat:"Reasoning", q:"Select the number that can replace the question mark in the series 105 97 89 81 73 ?", opts:["65","58","60","70"], ans:"65", marks:1, time:"3 min"},
+{cat:"LCM & HCF", q:"If the ratio of two numbers is 5 : 3 and the product of their LCM and HCF is 135, find the sum of reciprocals of the LCM and HCF.", opts:["1","2","3","4"], ans:"2", marks:1, time:"3 min"},
+{cat:"International Affairs", q:"Which country became the first in Latin America to exit China's Belt and Road Initiative in 2025?", opts:["Chile","Argentina","Colombia","Panama"], ans:"Argentina", marks:1, time:"3 min"},
+{cat:"Arithmetic", q:"Find the missing number.", opts:["18","16","14","20"], ans:"18", marks:1, time:"3 min"},
+{cat:"Reasoning", q:"P, Q, R, S, T, U and V are sitting around a circular table facing the centre. Given conditions, how many people sit between Q and U when counted from the right of Q?", opts:["1","3","4","2"], ans:"3", marks:1, time:"3 min"},
+{cat:"Data Interpretation", q:"Find the missing value.", opts:["86.5","46.5","66.5","34.5"], ans:"66.5", marks:1, time:"3 min"},
+{cat:"Blood Relations", q:"In a code, A+B means ‘A is mother of B’, A−B means ‘A is brother of B’, A×B means ‘A is wife of B’, and A÷B means ‘A is father of B’. How is M related to Q if M+N×O÷P−Q?", opts:["Father's sister","Mother's mother","Father's mother","Mother's sister"], ans:"Father's mother", marks:1, time:"3 min"},
+{cat:"Reasoning", q:"What should come in place of the question mark in the alphabetical series XBF UYC RVZ OSW ?", opts:["TPL","TLP","LTP","LPT"], ans:"TLP", marks:1, time:"3 min"},
+{cat:"Law & Judiciary", q:"Which type of subordinate court primarily handles disputes related to property ownership and contractual agreements?", opts:["Civil Courts","Criminal Courts","Revenue Courts","Family Courts"], ans:"Civil Courts", marks:1, time:"3 min"},
+{cat:"Reasoning", q:"FARM is related to CXOJ, and FRESH to COBPE. To which is RICH related following same logic?", opts:["OEZF","OFZE","OFZF","OEZE"], ans:"OFZE", marks:1, time:"3 min"},
+{cat:"Computer Awareness", q:"What is the purpose of the Slide Master in MS PowerPoint?", opts:["Apply consistent formatting","Export slides as images","Delete multiple slides","Insert animations"], ans:"Apply consistent formatting", marks:1, time:"3 min"},
+{cat:"Statistics", q:"Find the median of 76, 83, 30, 11, 81, 52, 18, 34, 84, 35, 27.", opts:["30","35","52","34"], ans:"35", marks:1, time:"3 min"},
+{cat:"Statistics", q:"If mode and median of a data set are 28.4 and 88 respectively, find the mean using empirical formula.", opts:["114.2","119.2","117.8","127.7"], ans:"119.2", marks:1, time:"3 min"},
+{cat:"Profit & Loss", q:"The marked price of a bed is ₹517, 30% above cost price. If profit is 2%, find discount percentage.", opts:["18.57%","24.06%","20.36%","21.54%"], ans:"21.54%", marks:1, time:"3 min"},
+{cat:"Reasoning", q:"67 is related to 74, 13 to 20. Following same logic, to which is 52 related?", opts:["63","57","59","61"], ans:"59", marks:1, time:"3 min"},
+{cat:"Coding-Decoding", q:"Using given code table, what will be the code for the group 7 2 @ 1 3 &?", opts:["W A Z R T M","W A R Z T M","M A Z T R W","M A Z R T W"], ans:"W A R Z T M", marks:1, time:"3 min"},
+{cat:"Reformers", q:"Who promoted inter-caste and inter-religious marriages through legislation?", opts:["Annie Besant","Pandita Ramabai","Raja Ram Mohan Roy","Sir Syed Ahmed Khan"], ans:"Raja Ram Mohan Roy", marks:1, time:"3 min"},
+{cat:"Reasoning", q:"Based on English alphabetical order, three of the following four letter-clusters are alike. Which does NOT belong?", opts:["POR","SQU","LJN","ECG"], ans:"ECG", marks:1, time:"3 min"},
+
+
+];
+// ---------------- QUIZ LOGIC ----------------
+// STATE
+let currentIndex = 0;
+let responses = new Array(quiz.length).fill(null);
+let studentName = "";
+let timerSec = 80*60;
+let timerInterval = null;
+let examStarted = false;
+
+const startCard=document.getElementById('startCard'),
+      quizCard=document.getElementById('quizCard'),
+      resultCard=document.getElementById('resultCard'),
+      qHeading=document.getElementById('qHeading'),
+      qCategory=document.getElementById('qCategory'),
+      qbox=document.getElementById('qbox'),
+      navNumbers=document.getElementById('navNumbers'),
+      timerTop=document.getElementById('timerTop'),
+      timerMain=document.getElementById('timer');
+
+function escapeHtml(str){return String(str||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]))}
+
+function buildNav(){
+  navNumbers.innerHTML='';
+  quiz.forEach((_,i)=>{
+    const btn=document.createElement('button');
+    btn.type = "button"; // ✅ prevents form submission
+    btn.textContent = i + 1;
+    btn.dataset.idx = i;
+    btn.onclick = () => {
+      saveCurrent();
+      currentIndex = i;
+      renderQuestion();
+    };
+    navNumbers.appendChild(btn);
+  });
+}
+
+
+function renderQuestion(){
+  const item=quiz[currentIndex];
+  qHeading.textContent=`Question ${currentIndex+1}`;
+  qCategory.textContent=item.cat;
+  let html=`<div class="qtext">${item.q}</div>`;
+  item.opts.forEach((opt,i)=>{
+    const checked=(responses[currentIndex]===opt)?'checked':'';
+    html+=`<label class="opt"><input type="radio" name="opt" value="${escapeHtml(opt)}" ${checked}/> ${String.fromCharCode(65+i)}. ${opt}</label>`;
+  });
+  qbox.innerHTML=html;
+  Array.from(navNumbers.children).forEach((b,idx)=>b.classList.toggle('current',idx===currentIndex));
+}
+
+function saveCurrent(){
+  const sel=qbox.querySelector('input[name="opt"]:checked');
+  if(sel) responses[currentIndex]=sel.value;
+}
+
+function formatTime(s){const m=Math.floor(s/60),sec=s%60;return `${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;}
+
+function startExam(){
+  const nameInput=document.getElementById('studentName').value.trim();
+  if(!nameInput){alert('Enter your name');return;}
+  studentName=nameInput;
+  openFullscreen();
+  startCore();
+}
+function startDemo(){
+  studentName=document.getElementById('studentName').value.trim()||'Demo Student';
+  startCore(true);
+}
+function startCore(demo=false){
+  examStarted=true;
+  startCard.style.display='none'; quizCard.style.display='block';
+  timerMain.style.display=demo?'none':'block'; buildNav(); renderQuestion();
+  timerInterval=setInterval(()=>{
+    timerSec--; timerTop.textContent=formatTime(timerSec); timerMain.textContent=formatTime(timerSec);
+    if(timerSec<=0){clearInterval(timerInterval); alert('Time up'); finishExam();}
+  },1000);
+}
+function openFullscreen(){const el=document.documentElement; if(el.requestFullscreen) el.requestFullscreen();}
+function closeFullscreen(){if(document.exitFullscreen) document.exitFullscreen();}
+document.addEventListener('visibilitychange',()=>{if(examStarted&&document.hidden){alert('Tab switched. Auto-submit.');finishExam();}});
+document.addEventListener('fullscreenchange',()=>{if(examStarted&&!document.fullscreenElement){alert('Exited fullscreen. Auto-submit.');finishExam();}});
+
+document.getElementById('startBtn').addEventListener('click',e=>{e.preventDefault();startExam();});
+document.getElementById('demoBtn').addEventListener('click',e=>{e.preventDefault();startDemo();});
+document.getElementById('prevBtn').addEventListener('click',()=>{saveCurrent();if(currentIndex>0)currentIndex--;renderQuestion();});
+document.getElementById('nextBtn').addEventListener('click',()=>{saveCurrent();if(currentIndex<quiz.length-1)currentIndex++;renderQuestion();});
+document.getElementById('submitBtn').addEventListener('click',()=>{if(confirm('Submit exam?'))finishExam();});
+
+function finishExam(){
+  if(!examStarted) return;
+  examStarted = false;
+  clearInterval(timerInterval);
+  saveCurrent();
+
+  let score = 0;
+  let max = 0;
+  const details = [];
+
+  quiz.forEach((it, i) => {
+    max += it.marks;
+    let got = 0;
+
+    // responses[i] is null if unanswered — treat as unattempted
+    if (responses[i]) {
+      if (responses[i] === it.ans) {
+        got = it.marks;           // correct
+      } else {
+        got = - (it.marks / 3);   // wrong: -1/3 of marks
+      }
+    } // else got stays 0 for unattempted
+
+    score += got;
+
+    details.push({
+      q: it.q,
+      given: responses[i] || '(no answer)',
+      correct: it.ans,
+      marks: got
+    });
+  });
+
+  // optional: round score to 2 decimals for display
+  const displayScore = Math.round((score + Number.EPSILON) * 100) / 100;
+
+  quizCard.style.display = 'none';
+  resultCard.style.display = 'block';
+  document.getElementById('resultSummary').innerHTML =
+    `<p><strong>Name:</strong> ${escapeHtml(studentName)}<br><strong>Score:</strong> ${displayScore}/${max}</p>`;
+
+  const d = document.getElementById('detailSummary');
+  d.innerHTML = '';
+  details.forEach((r, i) => {
+    const el = document.createElement('div');
+    el.innerHTML = `<strong>Q${i+1}:</strong> ${r.q}<br>Your: ${escapeHtml(String(r.given))} | Correct: ${escapeHtml(String(r.correct))} | Marks: ${r.marks}`;
+    d.appendChild(el);
+  });
+
+  // --- send result to Google Script ---
+  fetch("https://script.google.com/macros/s/AKfycbym7870t9FYTGPZqgXjxzS2WdL4ye4uqfudkpfVQHAAJUUKn6DPt6RQRCIvlyHfJmSk/exec", {
+    method: "POST",
+    body: new URLSearchParams({
+      name: studentName,
+      score: displayScore,
+      total: max,
+      answers: JSON.stringify(details)
+    })
+  })
+  .then(()=>console.log("Result sent"))
+  .catch(err=>console.error("Error sending result:",err));
+
+  try{ closeFullscreen(); } catch(e) {}
+}
+
+</script>
+</body>
+</html>
